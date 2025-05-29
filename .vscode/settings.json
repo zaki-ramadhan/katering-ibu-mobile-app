@@ -1,0 +1,17 @@
+{
+	"java.configuration.updateBuildConfiguration": "interactive",
+	"folder-color.pathColors": [
+		{
+			"folderPath": "katering_ibu_m_flutter\\lib\\screens\\home_screen.dart\\",
+			"badge": "🌐"
+		},
+		{
+			"folderPath": "katering_ibu_m_flutter\\lib\\screens\\login_screen.dart\\",
+			"badge": "🔑"
+		},
+		{
+			"folderPath": "katering_ibu_m_flutter\\lib\\screens\\sign_up_screen.dart\\",
+			"badge": "🔑"
+		}
+	]
+}

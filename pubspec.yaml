@@ -1,0 +1,57 @@
+name: katering_ibu_m_flutter
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.7.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.4.0
+  # flutter_native_splash: ^2.4.6
+  google_fonts: ^6.2.1
+  lottie: ^3.3.1
+  animated_splash_screen: ^1.3.0
+  page_transition: ^2.2.1
+  sliding_clipped_nav_bar: ^3.1.1
+  flutter_animate: ^4.5.2
+  image_picker: ^1.1.2
+  shared_preferences: ^2.5.3
+  intl: ^0.20.2
+  logger: ^2.5.0
+  flutter_profile_picture: ^2.0.0
+  provider: ^6.1.5
+  timeago: ^3.7.1
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.3 # ini untuk ganti icon app di real device
+
+flutter_icons:
+  # logo aplikasi di display
+  android: true
+  ios: true
+  image_path: "assets/images/logo.png" # ganti dengan path ke icon
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: assets/images/logo_generated_512.png
+
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/pan_loading_asset.json
+    - assets/images/ # logo untuk ditampilkan di dalam aplikasi
+
+# splash screen 
+# flutter_native_splash:
+#   android: true
+#   ios: true
+#   web: false
+
+#   color: "#2c3e50" #warna background nya
+#   image: "assets/images/splash screen image katering ibu app.png"
