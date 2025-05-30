@@ -51,7 +51,7 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
                   _buildInput(
                     context,
                     top: 22,
-                    defaultVal: 'Nomor HP Anda icon:',
+                    defaultVal: 'Nomor HP Anda :',
                     icon: Icons.phone,
                     size: 26,
                   ),

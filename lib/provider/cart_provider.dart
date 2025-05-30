@@ -17,9 +17,7 @@ class CartProvider extends ChangeNotifier {
       _cartItems.clear();
       for (var item in jsonList) {
         final menu = menuById(item['menu_id']);
-        if (menu != null) {
-          _cartItems.add(CartItem(menu: menu, quantity: item['quantity']));
-        }
+        _cartItems.add(CartItem(menu: menu, quantity: item['quantity']));
       }
       notifyListeners();
     }

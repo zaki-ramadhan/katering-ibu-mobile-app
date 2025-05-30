@@ -18,7 +18,7 @@ class ViewMenu extends StatelessWidget {
         titleAppBar: 'Detail Menu',
         isIconShow: false,
         isLogoutIconShow: false,
-        isNavigableByBottomBar: true,
+        isNavigableByBottomBar: false,
       ),
       body: Container(
         color: white,

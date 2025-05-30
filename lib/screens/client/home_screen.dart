@@ -5,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:katering_ibu_m_flutter/models/menu_model.dart';
 import 'package:katering_ibu_m_flutter/models/ulasan_model.dart';
 import 'package:katering_ibu_m_flutter/provider/cart_provider.dart';
-import 'package:katering_ibu_m_flutter/screens/client/cart_screen.dart';
 import 'package:katering_ibu_m_flutter/screens/client/notification_screen.dart';
 import 'package:katering_ibu_m_flutter/screens/client/search_menu_screen.dart';
 import 'package:katering_ibu_m_flutter/screens/client/view_menu_screen.dart';
@@ -485,11 +484,62 @@ class _HomeScreenState extends State<HomeScreen> {
                       ScaffoldMessenger.of(context).hideCurrentSnackBar();
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text(
-                            'Menu ${menu.namaMenu} ditambahkan ke keranjang!',
+                          content: Container(
+                            padding: EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withAlpha(
+                                      51,
+                                    ), // 0.2 * 255
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.shopping_cart,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                ),
+                                SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        'Ditambahkan ke keranjang!',
+                                        style: GoogleFonts.plusJakartaSans(
+                                          color: Colors.white,
+                                          fontWeight: semibold,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      SizedBox(height: 2),
+                                      Text(
+                                        'Menu ${menu.namaMenu} berhasil ditambahkan',
+                                        style: GoogleFonts.plusJakartaSans(
+                                          color: Colors.white.withAlpha(
+                                            229,
+                                          ), // 0.9 * 255
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          backgroundColor: Colors.green,
-                          duration: Duration(seconds: 1),
+                          backgroundColor: Colors.green.shade500,
+                          duration: Duration(seconds: 2),
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          margin: EdgeInsets.all(16),
                         ),
                       );
                     },
