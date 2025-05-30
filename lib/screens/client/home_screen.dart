@@ -25,7 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String? name;
   String? role;
   String? profileImage;
-  String? email;
+  String? phone;
 
   Logger logger = Logger();
 
@@ -43,7 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
         name = userData['name'];
         role = userData['role'];
         profileImage = userData['foto_profile'];
-        email = userData['email'];
+        phone = userData['notelp'];
       });
     } catch (e) {
       logger.i('Error fetching user data: $e');
@@ -143,7 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   Text(
-                    email ?? '',
+                    phone ?? '',
                     style: GoogleFonts.plusJakartaSans(
                       color: Colors.grey[400],
                       fontSize: 14,
@@ -546,25 +546,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        // ! label terlaris
-        // Positioned(
-        //   top: 8,
-        //   left: -35,
-        //   child: Transform.rotate(
-        //     angle: -0.6,
-        //     child: Container(
-        //       padding: EdgeInsets.symmetric(vertical: 5, horizontal: 40),
-        //       color: primaryColor,
-        //       child: Text(
-        //         'Terlaris',
-        //         style: GoogleFonts.plusJakartaSans(
-        //           color: Colors.yellow.shade500,
-        //           fontWeight: semibold,
-        //         ),
-        //       ),
-        //     ),
-        //   ),
-        // ),
       ],
     );
   }
@@ -622,7 +603,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     final ulasan =
                         displayedUlasans[index];
                     return Container(
-                      margin: EdgeInsets.only(bottom: 12),
+                      margin: EdgeInsets.only(bottom: 8),
                       padding: EdgeInsets.fromLTRB(18, 18, 24, 32),
                       decoration: BoxDecoration(
                         border: Border.all(

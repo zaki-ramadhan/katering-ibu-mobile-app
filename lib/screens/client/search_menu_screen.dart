@@ -153,21 +153,6 @@ class _SearchMenuScreenState extends State<SearchMenuScreen> {
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 4),
-            // TODO : ini rating belum diurus
-            // Row(
-            //   children: [
-            //     const Icon(Icons.star, color: starColor, size: 18),
-            //     const SizedBox(width: 4),
-            //     Text(
-            //       item['rating'].toString(),
-            //       style: GoogleFonts.plusJakartaSans(
-            //         color: Colors.grey[600],
-            //         fontSize: 14,
-            //         fontWeight: semibold,
-            //       ),
-            //     ),
-            //   ],
-            // ),
             const SizedBox(height: 4),
             Text(
               menu.formattedHarga,

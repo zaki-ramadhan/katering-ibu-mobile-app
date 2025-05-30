@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:katering_ibu_m_flutter/screens/client/login_screen.dart';
@@ -6,7 +8,7 @@ import '../../constants/index.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class SignUpScreen extends StatefulWidget {
-  const SignUpScreen({Key? key}) : super(key: key);
+  const SignUpScreen({super.key});
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();

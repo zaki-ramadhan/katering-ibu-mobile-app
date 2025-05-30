@@ -5,6 +5,8 @@ import 'package:katering_ibu_m_flutter/services/order_service.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_app_bar.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_bottom_bar.dart';
 import 'package:logger/logger.dart';
+import 'package:timeago/timeago.dart' as timeago;
+import 'package:intl/intl.dart';
 
 class OrderHistoryScreen extends StatefulWidget {
   const OrderHistoryScreen({super.key});
@@ -40,6 +42,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   @override
   void initState() {
     super.initState();
+    timeago.setLocaleMessages('id', timeago.IdMessages());
     _fetchOrderHistory();
   }
 
@@ -55,6 +58,25 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+
+  String _formatTimeAgo(String? dateStr) {
+    if (dateStr == null) return '-';
+    try {
+      final date = DateTime.parse(dateStr);
+      return timeago.format(date, locale: 'id');
+    } catch (_) {
+      return dateStr;
+    }
+  }
+
+  String formatRupiah(dynamic amount) {
+    try {
+      final number = amount is num ? amount : num.parse(amount.toString());
+      return NumberFormat('#,##0', 'id_ID').format(number);
+    } catch (_) {
+      return amount.toString();
     }
   }
 
@@ -208,16 +230,13 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
               Text(
                 '#${order['id']}',
                 style: GoogleFonts.plusJakartaSans(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  color: primaryColor,
+                  fontWeight: bold,
+                  fontSize: 16,
+                  color: primaryColor.withAlpha(140),
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 4,
-                ),
+                padding: const EdgeInsets.fromLTRB(8, 6, 14, 6),
                 decoration: BoxDecoration(
                   color: statusColor,
                   borderRadius: BorderRadius.circular(20),
@@ -232,6 +251,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                       style: GoogleFonts.plusJakartaSans(
                         color: Colors.white,
                         fontWeight: medium,
+                        fontSize: 12,
                       ),
                     ),
                   ],
@@ -239,12 +259,12 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Rp ${order['total_amount']}',
+                'Rp ${formatRupiah(order['total_amount'])}',
                 style: GoogleFonts.plusJakartaSans(
                   color: primaryColor,
                   fontWeight: semibold,
@@ -252,10 +272,10 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                 ),
               ),
               Text(
-                order['delivery_date'] ?? '-',
+                _formatTimeAgo(order['delivery_date']),
                 style: GoogleFonts.plusJakartaSans(
                   color: Colors.grey[500],
-                  fontSize: 14,
+                  fontSize: 12,
                   fontWeight: medium,
                 ),
               ),
@@ -268,13 +288,13 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
               Text(
                 'Item Pesanan:',
                 style: GoogleFonts.plusJakartaSans(
-                  fontWeight: medium,
+                  fontWeight: semibold,
                   fontSize: 14,
                 ),
               ),
               const SizedBox(height: 10),
               SizedBox(
-                height: 36,
+                height: 32,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: (order['items'] as List).length,
@@ -284,11 +304,11 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                       margin: const EdgeInsets.only(right: 8),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 12,
-                        vertical: 5,
+                        vertical: 8,
                       ),
                       decoration: BoxDecoration(
                         color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(55),
                       ),
                       child: Text(
                         item['menu']['nama_menu'],

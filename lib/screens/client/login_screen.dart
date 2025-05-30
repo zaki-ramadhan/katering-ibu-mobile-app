@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:logger/logger.dart';
 import 'package:flutter/material.dart';
 import 'package:katering_ibu_m_flutter/screens/client/home_screen.dart';
@@ -81,7 +83,6 @@ class _LoginScreenState extends State<LoginScreen> {
       if (token != null && userId != null && rememberMe) {
         Future.microtask(() {
           Navigator.pushReplacement(
-            // ignore: use_build_context_synchronously
             context,
             PageRouteBuilder(
               transitionDuration: const Duration(milliseconds: 300),

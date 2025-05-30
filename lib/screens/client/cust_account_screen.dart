@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -23,6 +25,7 @@ class _CustomerAccountState extends State<CustomerAccount> {
   String? role;
   String? _profileImagePath;
 
+  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -45,16 +48,17 @@ class _CustomerAccountState extends State<CustomerAccount> {
         phone = userData['notelp'];
         role = userData['role'];
         _profileImagePath = userData['foto_profile'];
+        _nameController.text = name ?? '';
         _emailController.text = email ?? '';
         _phoneController.text = phone ?? '';
       });
     } catch (e) {
       logger.i('Error fetching user data: $e');
       setState(() {
-        name = 'Error';
-        email = 'Error';
-        phone = 'Error';
-        role = 'Error';
+        name = ' ';
+        email = ' ';
+        phone = ' ';
+        role = ' ';
       });
     }
   }
@@ -77,6 +81,7 @@ class _CustomerAccountState extends State<CustomerAccount> {
     }
     try {
       await UserService().updateLoggedInUser({
+        'name': _nameController.text.trim(),
         'email': _emailController.text.trim(),
         'notelp': _phoneController.text.trim(),
         if (_passwordController.text.isNotEmpty)
@@ -135,11 +140,21 @@ class _CustomerAccountState extends State<CustomerAccount> {
               ),
               const SizedBox(height: 40),
               _buildEditableField(
+                label: "Username",
+                controller: _nameController,
+                icon: Icons.person,
+                enabled: _isEditing,
+                keyboardType: TextInputType.text,
+                hintText: _isEditing ? "" : name ?? 'Tidak ada username',
+              ),
+              const SizedBox(height: 20),
+              _buildEditableField(
                 label: "Email Anda",
                 controller: _emailController,
                 icon: Icons.email,
                 enabled: _isEditing,
                 keyboardType: TextInputType.emailAddress,
+                hintText: _isEditing ? "" : email ?? 'Tidak ada email',
               ),
               const SizedBox(height: 20),
               _buildEditableField(
@@ -148,6 +163,8 @@ class _CustomerAccountState extends State<CustomerAccount> {
                 icon: Icons.phone,
                 enabled: _isEditing,
                 keyboardType: TextInputType.phone,
+                hintText:
+                    _isEditing ? "" : phone ?? 'Tidak ada nomor handphone',
               ),
               const SizedBox(height: 20),
               _buildEditableField(
@@ -275,10 +292,11 @@ class _CustomerAccountState extends State<CustomerAccount> {
         ),
         const SizedBox(height: 12),
         Container(
-          padding: const EdgeInsets.fromLTRB(24, 0, 32, 0),
+          padding: const EdgeInsets.fromLTRB(18, 6, 32, 6),
           decoration: BoxDecoration(
             color: Colors.blueGrey.shade50.withAlpha(120),
             borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.blueGrey.shade200.withAlpha(60)),
           ),
           child: Row(
             children: [
@@ -287,7 +305,7 @@ class _CustomerAccountState extends State<CustomerAccount> {
                 color: Colors.blueGrey.shade600.withAlpha(120),
                 size: 22,
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 18),
               Expanded(
                 child: TextField(
                   controller: controller,
