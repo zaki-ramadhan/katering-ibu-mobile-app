@@ -49,48 +49,54 @@ class UserService {
   }
 
   Future<Map<String, dynamic>> fetchLoggedInUser() async {
-  final prefs = await SharedPreferences.getInstance();
-  final token = prefs.getString('token'); 
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
 
-  if (token == null) {
-    logger.i('Token not found in SharedPreferences');
-    throw Exception('Token not found. User is not logged in.');
+    if (token == null) {
+      logger.i('Token not found in SharedPreferences');
+      throw Exception('Token not found. User is not logged in.');
+    }
+
+    logger.i('Token fetched: $token');
+
+    final response = await http.get(
+      Uri.parse('$localHost/users/profile'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    logger.i('Response status: ${response.statusCode}');
+    logger.i('Response body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      final user = json.decode(response.body)['user'];
+      // Simpan ke cache
+      prefs.setString('cached_logged_in_user', json.encode(user));
+      return user;
+    } else {
+      // Jika gagal, ambil dari cache
+      final cached = prefs.getString('cached_logged_in_user');
+      if (cached != null) {
+        return json.decode(cached);
+      }
+      throw Exception(
+        'Failed to fetch logged-in user data: ${response.statusCode}',
+      );
+    }
   }
-
-  logger.i('Token fetched: $token'); 
-
-  final response = await http.get(
-    Uri.parse('$localHost/users/profile'),
-    headers: {
-      'Authorization': 'Bearer $token',
-      'Content-Type': 'application/json',
-    },
-  );
-
-  logger.i('Response status: ${response.statusCode}');
-  logger.i('Response body: ${response.body}'); 
-
-  if (response.statusCode == 200) {
-    return json.decode(response.body)['user']; 
-  } else {
-    throw Exception('Failed to fetch logged-in user data: ${response.statusCode}');
-  }
-}
 
   Future<void> updateLoggedInUser(Map<String, dynamic> userData) async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString(
-      'token',
-    );
+    final token = prefs.getString('token');
 
     if (token == null) {
       throw Exception('Token not found. User is not logged in.');
     }
 
     final response = await http.put(
-      Uri.parse(
-        '$localHost/users/update',
-      ),
+      Uri.parse('$localHost/users/update'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
