@@ -4,6 +4,7 @@ import 'package:katering_ibu_m_flutter/constants/index.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:katering_ibu_m_flutter/models/menu_model.dart';
 import 'package:katering_ibu_m_flutter/models/ulasan_model.dart';
+import 'package:katering_ibu_m_flutter/provider/cart_provider.dart';
 import 'package:katering_ibu_m_flutter/screens/client/cart_screen.dart';
 import 'package:katering_ibu_m_flutter/screens/client/notification_screen.dart';
 import 'package:katering_ibu_m_flutter/screens/client/search_menu_screen.dart';
@@ -13,6 +14,7 @@ import 'package:katering_ibu_m_flutter/services/user_service.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_bottom_bar.dart';
 import 'package:katering_ibu_m_flutter/services/menu_service.dart';
 import 'package:logger/logger.dart';
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -67,18 +69,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       padding: EdgeInsets.only(bottom: 10),
                       decoration: BoxDecoration(
                         gradient: RadialGradient(
-                          center:
-                              Alignment.bottomCenter,
-                          radius:
-                              2.0,
+                          center: Alignment.bottomCenter,
+                          radius: 2.0,
                           colors: [
                             primaryColor,
-                            const Color.fromARGB(
-                              255,
-                              59,
-                              77,
-                              97,
-                            ),
+                            const Color.fromARGB(255, 59, 77, 97),
                             const Color.fromARGB(255, 38, 54, 68),
                           ],
                           stops: [0.0, 0.5, 0.9],
@@ -124,11 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     backgroundColor: Colors.grey.shade300,
                     backgroundImage: NetworkImage(profileImage!),
                   )
-                  : ProfilePicture(
-                    name: name ?? '',
-                    radius: 24,
-                    fontsize: 18,
-                  ),
+                  : ProfilePicture(name: name ?? '', radius: 24, fontsize: 18),
               const SizedBox(width: 10),
               Column(
                 spacing: 1,
@@ -454,9 +445,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               animation,
                               secondaryAnimation,
                             ) {
-                              return ViewMenu(
-                                menu: menu,
-                              );
+                              return ViewMenu(menu: menu);
                             },
                           ),
                         );
@@ -488,31 +477,22 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   flex: 1,
                   child: ElevatedButton(
-                    onPressed:
-                        () => Navigator.push(
-                          context,
-                          PageRouteBuilder(
-                            transitionDuration: Duration(milliseconds: 300),
-                            transitionsBuilder: (
-                              context,
-                              animation,
-                              secondaryAnimation,
-                              child,
-                            ) {
-                              return FadeTransition(
-                                opacity: animation,
-                                child: child,
-                              );
-                            },
-                            pageBuilder: (
-                              context,
-                              animation,
-                              secondaryAnimation,
-                            ) {
-                              return CartScreen();
-                            },
+                    onPressed: () {
+                      Provider.of<CartProvider>(
+                        context,
+                        listen: false,
+                      ).addItem(menu);
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Menu ${menu.namaMenu} ditambahkan ke keranjang!',
                           ),
+                          backgroundColor: Colors.green,
+                          duration: Duration(seconds: 1),
                         ),
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
                       shadowColor: Colors.transparent,
@@ -600,8 +580,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: displayedUlasans.length,
                   itemBuilder: (context, index) {
-                    final ulasan =
-                        displayedUlasans[index];
+                    final ulasan = displayedUlasans[index];
                     return Container(
                       margin: EdgeInsets.only(bottom: 8),
                       padding: EdgeInsets.fromLTRB(18, 18, 24, 32),

@@ -167,7 +167,7 @@ class _SearchMenuScreenState extends State<SearchMenuScreen> {
                 Expanded(
                   flex: 3,
                   child: Container(
-                    margin: EdgeInsets.only(right: 6), // jarak antar tombol
+                    margin: EdgeInsets.only(right: 6),
                     child: ElevatedButton(
                       onPressed: () {
                         Navigator.push(

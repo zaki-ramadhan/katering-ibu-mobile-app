@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:katering_ibu_m_flutter/constants/index.dart';
-import 'package:katering_ibu_m_flutter/dummy_data.dart';
+import 'package:katering_ibu_m_flutter/models/cart_model.dart';
 import 'package:katering_ibu_m_flutter/screens/client/rating_order_scren.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_app_bar.dart';
+import 'package:provider/provider.dart';
+
+import '../../provider/cart_provider.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -14,9 +18,16 @@ class CartScreen extends StatefulWidget {
 
 class _CartScreenState extends State<CartScreen> {
   final Set<int> selectedItems = {};
+  final NumberFormat rupiahFormat = NumberFormat.currency(
+    locale: 'id_ID',
+    symbol: 'Rp',
+    decimalDigits: 0,
+  );
 
   @override
   Widget build(BuildContext context) {
+    final cartProvider = Provider.of<CartProvider>(context);
+    List<CartItem> items = cartProvider.cartItems;
     return Scaffold(
       appBar: CustomAppBar(
         titleAppBar: 'Keranjang Saya',
@@ -30,23 +41,32 @@ class _CartScreenState extends State<CartScreen> {
           children: [
             Container(
               padding: EdgeInsets.symmetric(vertical: 20, horizontal: 32),
-              child: Column(
-                children: [
-                  _buildItem(context, 3),
-                  _buildItem(context, 0),
-                  _buildItem(context, 2),
-                  _buildItem(context, 1),
-                ],
-              ),
+              child:
+                  items.isEmpty
+                      ? Center(
+                        child: Text(
+                          'Keranjang kosong',
+                          style: GoogleFonts.plusJakartaSans(
+                            color: Colors.grey,
+                            fontSize: 18,
+                          ),
+                        ),
+                      )
+                      : Column(
+                        children: [
+                          for (int i = 0; i < items.length; i++)
+                            _buildItem(context, items[i], i),
+                        ],
+                      ),
             ),
           ],
         ),
       ),
-      bottomNavigationBar: _buildCTABottomBar(context),
+      bottomNavigationBar: _buildCTABottomBar(context, items),
     );
   }
 
-  Widget _buildItem(BuildContext context, int index) {
+  Widget _buildItem(BuildContext context, CartItem cartItem, int index) {
     final isSelected = selectedItems.contains(index);
 
     return GestureDetector(
@@ -80,32 +100,49 @@ class _CartScreenState extends State<CartScreen> {
             ),
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image.asset(
-                DummyData.allMenus[index]['image'].toString(),
-                width: 70,
-                height: 70,
-                fit: BoxFit.cover,
-              ),
+              child:
+                  cartItem.menu.foto.isNotEmpty
+                      ? Image.network(
+                        cartItem.menu.foto,
+                        width: 70,
+                        height: 70,
+                        fit: BoxFit.cover,
+                      )
+                      : Container(
+                        width: 70,
+                        height: 70,
+                        color: Colors.grey.shade200,
+                        child: Icon(Icons.fastfood, color: Colors.grey),
+                      ),
             ),
             SizedBox(width: 18),
             Column(
-              spacing: 4,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  DummyData.allMenus[index]['name'].toString(),
+                  cartItem.menu.namaMenu,
                   style: GoogleFonts.plusJakartaSans(
                     color: primaryColor,
                     fontSize: 16,
-                    fontWeight: semibold,
+                    fontWeight: medium,
                   ),
                 ),
+                // SizedBox(height: 8),
+                // Text(
+                //   '${rupiahFormat.format(cartItem.menu.harga)} x ${cartItem.quantity}',
+                //   style: GoogleFonts.plusJakartaSans(
+                //     color: Colors.grey,
+                //     fontSize: 13,
+                //     fontWeight: medium
+                //   ),
+                // ),
+                SizedBox(height: 8),
                 Text(
-                  DummyData.allMenus[index]['price'].toString(),
+                  rupiahFormat.format(cartItem.menu.harga * cartItem.quantity),
                   style: GoogleFonts.plusJakartaSans(
-                    color: primaryColor.withAlpha(180),
-                    fontSize: 16,
-                    fontWeight: medium,
+                    color: primaryColor,
+                    fontSize: 18,
+                    fontWeight: bold,
                   ),
                 ),
               ],
@@ -114,7 +151,6 @@ class _CartScreenState extends State<CartScreen> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.end,
-              spacing: 12,
               children: [
                 Container(
                   width: 40,
@@ -127,7 +163,17 @@ class _CartScreenState extends State<CartScreen> {
                     borderRadius: BorderRadius.circular(99),
                   ),
                   child: IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      final cartProvider = Provider.of<CartProvider>(
+                        context,
+                        listen: false,
+                      );
+                      cartProvider.updateQuantity(
+                        cartItem,
+                        cartItem.quantity - 1,
+                      );
+                      setState(() {});
+                    },
                     constraints: BoxConstraints(),
                     icon: Icon(Icons.remove),
                     padding: EdgeInsets.all(2),
@@ -136,15 +182,27 @@ class _CartScreenState extends State<CartScreen> {
                     ),
                   ),
                 ),
+                SizedBox(width: 8),
                 Text(
-                  '1',
+                  '${cartItem.quantity}',
                   style: GoogleFonts.plusJakartaSans(
                     fontWeight: semibold,
                     fontSize: 18,
                   ),
                 ),
+                SizedBox(width: 8),
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    final cartProvider = Provider.of<CartProvider>(
+                      context,
+                      listen: false,
+                    );
+                    cartProvider.updateQuantity(
+                      cartItem,
+                      cartItem.quantity + 1,
+                    );
+                    setState(() {});
+                  },
                   icon: Icon(Icons.add),
                   color: Colors.white,
                   padding: EdgeInsets.all(6),
@@ -161,10 +219,17 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _buildCTABottomBar(BuildContext context) {
-    final allItemsSelected = selectedItems.length == DummyData.allMenus.length;
-    final selectedCount =
-        selectedItems.length;
+  Widget _buildCTABottomBar(BuildContext context, List<CartItem> items) {
+    final allItemsSelected =
+        selectedItems.length == items.length && items.isNotEmpty;
+    final selectedCount = selectedItems.length;
+
+    double totalHarga = 0;
+    for (int i = 0; i < items.length; i++) {
+      if (selectedItems.contains(i)) {
+        totalHarga += items[i].menu.harga * items[i].quantity;
+      }
+    }
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
@@ -185,10 +250,7 @@ class _CartScreenState extends State<CartScreen> {
                       selectedItems.clear();
                     } else {
                       selectedItems.addAll(
-                        List.generate(
-                          DummyData.allMenus.length,
-                          (index) => index,
-                        ),
+                        List.generate(items.length, (index) => index),
                       );
                     }
                   });
@@ -205,7 +267,7 @@ class _CartScreenState extends State<CartScreen> {
                     Text(
                       allItemsSelected
                           ? 'Batalkan pilih semua menu'
-                          : 'Pilih semua menu', 
+                          : 'Pilih semua menu',
                       style: GoogleFonts.plusJakartaSans(fontWeight: semibold),
                     ),
                   ],
@@ -213,9 +275,7 @@ class _CartScreenState extends State<CartScreen> {
               ),
               Text.rich(
                 TextSpan(
-                  style: GoogleFonts.plusJakartaSans(
-                    fontWeight: semibold,
-                  ),
+                  style: GoogleFonts.plusJakartaSans(fontWeight: semibold),
                   children: [
                     TextSpan(
                       text: 'Item dipilih : ',
@@ -248,7 +308,7 @@ class _CartScreenState extends State<CartScreen> {
                 ),
               ),
               Text(
-                'Rp210.000',
+                rupiahFormat.format(totalHarga),
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 18,
                   fontWeight: bold,
