@@ -152,8 +152,7 @@ class _SearchMenuScreenState extends State<SearchMenuScreen> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 4),
-            const SizedBox(height: 4),
+            const SizedBox(height: 8),
             Text(
               menu.formattedHarga,
               style: GoogleFonts.plusJakartaSans(
@@ -193,7 +192,7 @@ class _SearchMenuScreenState extends State<SearchMenuScreen> {
                             ) {
                               return ViewMenu(
                                 menu: menu,
-                              ); // Pass Menu object langsung
+                              );
                             },
                           ),
                         );
@@ -236,7 +235,6 @@ class _SearchMenuScreenState extends State<SearchMenuScreen> {
                               secondaryAnimation,
                               child,
                             ) {
-                              // Animasi Fade
                               return FadeTransition(
                                 opacity: animation,
                                 child: child,
@@ -284,25 +282,6 @@ class _SearchMenuScreenState extends State<SearchMenuScreen> {
             ),
           ],
         ),
-        // ! label terlaris
-        // Positioned(
-        //   top: 8,
-        //   left: -35,
-        //   child: Transform.rotate(
-        //     angle: -0.6,
-        //     child: Container(
-        //       padding: EdgeInsets.symmetric(vertical: 5, horizontal: 40),
-        //       color: primaryColor,
-        //       child: Text(
-        //         'Terlaris',
-        //         style: GoogleFonts.plusJakartaSans(
-        //           color: Colors.yellow.shade500,
-        //           fontWeight: semibold,
-        //         ),
-        //       ),
-        //     ),
-        //   ),
-        // ),
       ],
     );
   }

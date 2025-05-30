@@ -8,6 +8,7 @@ import 'package:katering_ibu_m_flutter/services/user_service.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_app_bar.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_bottom_bar.dart';
 import 'package:logger/logger.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CustomerAccount extends StatefulWidget {
   const CustomerAccount({super.key});
@@ -24,6 +25,9 @@ class _CustomerAccountState extends State<CustomerAccount> {
   String? phone;
   String? role;
   String? _profileImagePath;
+  String? lastPassword;
+  String? emailError;
+  String? passwordError;
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -32,11 +36,13 @@ class _CustomerAccountState extends State<CustomerAccount> {
 
   bool _isEditing = false;
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   @override
   void initState() {
     super.initState();
     _fetchUserData();
+    _loadLastPassword();
   }
 
   Future<void> _fetchUserData() async {
@@ -63,20 +69,41 @@ class _CustomerAccountState extends State<CustomerAccount> {
     }
   }
 
+  Future<void> _loadLastPassword() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lp = prefs.getString('last_password');
+    if (lp != null && lp.isNotEmpty) {
+      setState(() {
+        lastPassword = lp;
+      });
+    }
+  }
+
   Future<void> _saveProfile() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      emailError = null;
+      passwordError = null;
+    });
+
     if (_emailController.text.isEmpty || !_emailController.text.contains('@')) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Email tidak valid')));
-      setState(() => _isLoading = false);
+      setState(() {
+        emailError = '**Masukkan email yang valid (misal: user@gmail.com)';
+        _isLoading = false;
+      });
+      Future.delayed(const Duration(seconds: 3), () {
+        if (mounted) setState(() => emailError = null);
+      });
       return;
     }
-    if (_phoneController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No Handphone tidak boleh kosong')),
-      );
-      setState(() => _isLoading = false);
+    if (_passwordController.text.isNotEmpty &&
+        _passwordController.text.length < 8) {
+      setState(() {
+        passwordError = '**Password minimal 8 karakter';
+        _isLoading = false;
+      });
+      Future.delayed(const Duration(seconds: 3), () {
+        if (mounted) setState(() => passwordError = null);
+      });
       return;
     }
     try {
@@ -87,14 +114,19 @@ class _CustomerAccountState extends State<CustomerAccount> {
         if (_passwordController.text.isNotEmpty)
           'password': _passwordController.text,
       });
+      await _fetchUserData();
       setState(() {
         email = _emailController.text;
         phone = _phoneController.text;
         _isEditing = false;
       });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Profil berhasil diperbarui')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Profil berhasil diperbarui'),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     } catch (e) {
       ScaffoldMessenger.of(
         context,
@@ -156,6 +188,17 @@ class _CustomerAccountState extends State<CustomerAccount> {
                 keyboardType: TextInputType.emailAddress,
                 hintText: _isEditing ? "" : email ?? 'Tidak ada email',
               ),
+              if (emailError != null)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                    margin: EdgeInsets.only(top: 12),
+                    child: Text(
+                      emailError!,
+                      style: TextStyle(color: Colors.red, fontSize: 13),
+                    ),
+                  ),
+                ),
               const SizedBox(height: 20),
               _buildEditableField(
                 label: "No Handphone",
@@ -174,12 +217,27 @@ class _CustomerAccountState extends State<CustomerAccount> {
                 enabled: _isEditing,
                 obscureText: true,
                 hintText:
-                    _isEditing ? "Isi untuk ganti password" : "**********",
+                    _isEditing
+                        ? "Isi untuk ganti password"
+                        : (lastPassword?.isNotEmpty == true
+                            ? lastPassword
+                            : "**********"),
               ),
+              if (passwordError != null)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                    margin: EdgeInsets.only(top: 12),
+                    child: Text(
+                      passwordError!,
+                      style: TextStyle(color: Colors.red, fontSize: 13),
+                    ),
+                  ),
+                ),
               const SizedBox(height: 32),
               _isEditing
                   ? Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       ElevatedButton(
                         onPressed: _isLoading ? null : _saveProfile,
@@ -187,6 +245,10 @@ class _CustomerAccountState extends State<CustomerAccount> {
                           backgroundColor: primaryColor,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 14,
                           ),
                         ),
                         child:
@@ -203,6 +265,7 @@ class _CustomerAccountState extends State<CustomerAccount> {
                                   'Simpan',
                                   style: GoogleFonts.plusJakartaSans(
                                     color: Colors.white,
+                                    fontWeight: semibold,
                                   ),
                                 ),
                       ),
@@ -217,24 +280,32 @@ class _CustomerAccountState extends State<CustomerAccount> {
                                     _emailController.text = email ?? '';
                                     _phoneController.text = phone ?? '';
                                     _passwordController.clear();
+                                    emailError = null;
+                                    passwordError = null;
                                   });
                                 },
                         style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: primaryColor),
+                          side: BorderSide(color: Colors.blueGrey.shade200),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 28,
+                            vertical: 14,
                           ),
                         ),
                         child: Text(
                           'Batal',
                           style: GoogleFonts.plusJakartaSans(
                             color: primaryColor,
+                            fontWeight: semibold,
                           ),
                         ),
                       ),
                     ],
                   )
-                  : Center(
+                  : Align(
+                    alignment: Alignment.centerRight,
                     child: ElevatedButton(
                       onPressed: () => setState(() => _isEditing = true),
                       style: ElevatedButton.styleFrom(
@@ -242,10 +313,17 @@ class _CustomerAccountState extends State<CustomerAccount> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 28,
+                          vertical: 14,
+                        ),
                       ),
                       child: Text(
                         'Edit Profil',
-                        style: GoogleFonts.plusJakartaSans(color: Colors.white),
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Colors.white,
+                          fontWeight: semibold,
+                        ),
                       ),
                     ),
                   ),
@@ -310,7 +388,8 @@ class _CustomerAccountState extends State<CustomerAccount> {
                 child: TextField(
                   controller: controller,
                   enabled: enabled,
-                  obscureText: obscureText,
+                  obscureText:
+                      label == "Password" ? _obscurePassword : obscureText,
                   keyboardType: keyboardType,
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 16,
@@ -320,6 +399,28 @@ class _CustomerAccountState extends State<CustomerAccount> {
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     hintText: hintText,
+                    hintStyle: GoogleFonts.plusJakartaSans(
+                      color: Colors.blueGrey.shade400,
+                      fontWeight: medium,
+                    ),
+                    suffixIcon:
+                        label == "Password"
+                            ? _isEditing
+                                ? IconButton(
+                                  icon: Icon(
+                                    _obscurePassword
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
+                                    color: Colors.blueGrey.shade400,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      _obscurePassword = !_obscurePassword;
+                                    });
+                                  },
+                                )
+                                : null
+                            : null,
                   ),
                 ),
               ),

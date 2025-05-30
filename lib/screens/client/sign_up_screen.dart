@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:katering_ibu_m_flutter/screens/client/login_screen.dart';
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants/index.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -80,9 +81,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Future<void> _submitForm() async {
     FocusScope.of(context).unfocus();
     setState(() {
-      _fullNameError = _fullNameController.text.trim().isEmpty
-          ? 'Nama lengkap wajib diisi'
-          : '';
+      _fullNameError =
+          _fullNameController.text.trim().isEmpty
+              ? 'Nama lengkap wajib diisi'
+              : '';
       _emailError =
           _emailController.text.trim().isEmpty ? 'Email wajib diisi' : '';
       _passwordError =
@@ -92,9 +94,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (_fullNameError.isEmpty &&
         _emailError.isEmpty &&
         _passwordError.isEmpty) {
-      var url = Uri.parse(
-        '$localHost/register',
-      );
+      var url = Uri.parse('$localHost/register');
       try {
         var response = await http.post(
           url,
@@ -113,6 +113,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
         final data = json.decode(response.body);
 
         if (response.statusCode == 200 || response.statusCode == 201) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(
+            'last_password',
+            _passwordController.text.trim(),
+          );
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
@@ -128,8 +134,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
               context,
               PageRouteBuilder(
                 transitionDuration: const Duration(milliseconds: 300),
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                    const LoginScreen(),
+                pageBuilder:
+                    (context, animation, secondaryAnimation) =>
+                        const LoginScreen(),
                 transitionsBuilder: (
                   context,
                   animation,
@@ -267,14 +274,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(
                         color:
-                            _fullNameError.isNotEmpty ? Colors.red : transparent,
+                            _fullNameError.isNotEmpty
+                                ? Colors.red
+                                : transparent,
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(
                         color:
-                            _fullNameError.isNotEmpty ? Colors.red : primaryColor,
+                            _fullNameError.isNotEmpty
+                                ? Colors.red
+                                : primaryColor,
                         width: 2.0,
                       ),
                     ),
@@ -421,33 +432,38 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                     filled: true,
                     fillColor: Colors.grey[100],
-                    suffixIcon: _passwordController.text.isNotEmpty
-                        ? IconButton(
-                            icon: Icon(
-                              _showPassword
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                              color: Colors.grey,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _showPassword = !_showPassword;
-                              });
-                            },
-                          )
-                        : null,
+                    suffixIcon:
+                        _passwordController.text.isNotEmpty
+                            ? IconButton(
+                              icon: Icon(
+                                _showPassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                                color: Colors.grey,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _showPassword = !_showPassword;
+                                });
+                              },
+                            )
+                            : null,
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(
                         color:
-                            _passwordError.isNotEmpty ? Colors.red : transparent,
+                            _passwordError.isNotEmpty
+                                ? Colors.red
+                                : transparent,
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(
                         color:
-                            _passwordError.isNotEmpty ? Colors.red : primaryColor,
+                            _passwordError.isNotEmpty
+                                ? Colors.red
+                                : primaryColor,
                         width: 2.0,
                       ),
                     ),
@@ -518,31 +534,33 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           minimumSize: const Size(0, 0),
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
-                        onPressed: () => Navigator.push(
-                          context,
-                          PageRouteBuilder(
-                            transitionDuration:
-                                const Duration(milliseconds: 300),
-                            transitionsBuilder: (
+                        onPressed:
+                            () => Navigator.push(
                               context,
-                              animation,
-                              secondaryAnimation,
-                              child,
-                            ) {
-                              return FadeTransition(
-                                opacity: animation,
-                                child: child,
-                              );
-                            },
-                            pageBuilder: (
-                              context,
-                              animation,
-                              secondaryAnimation,
-                            ) {
-                              return const LoginScreen();
-                            },
-                          ),
-                        ),
+                              PageRouteBuilder(
+                                transitionDuration: const Duration(
+                                  milliseconds: 300,
+                                ),
+                                transitionsBuilder: (
+                                  context,
+                                  animation,
+                                  secondaryAnimation,
+                                  child,
+                                ) {
+                                  return FadeTransition(
+                                    opacity: animation,
+                                    child: child,
+                                  );
+                                },
+                                pageBuilder: (
+                                  context,
+                                  animation,
+                                  secondaryAnimation,
+                                ) {
+                                  return const LoginScreen();
+                                },
+                              ),
+                            ),
                         child: Text(
                           'Masuk',
                           style: GoogleFonts.plusJakartaSans(
