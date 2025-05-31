@@ -16,7 +16,3 @@ const black = FontWeight.w900;
 const starColor = Color(0xFFFFD250);
 const transparent = Colors.transparent;
 const white = Colors.white;
-
-// localhost
-// final String localHost = 'http://192.168.0.140:8001/api';
-final String localHost = 'http://192.168.179.92:8001/api';

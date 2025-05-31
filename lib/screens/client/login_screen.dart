@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:katering_ibu_m_flutter/config/index.dart';
 import 'package:logger/logger.dart';
 import 'package:flutter/material.dart';
 import 'package:katering_ibu_m_flutter/screens/client/home_screen.dart';
@@ -139,7 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
         );
 
         final response = await http.post(
-          Uri.parse('$localHost/login'),
+          Uri.parse('$baseUrl/login'),
           headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
@@ -194,8 +195,7 @@ class _LoginScreenState extends State<LoginScreen> {
               PageRouteBuilder(
                 transitionDuration: const Duration(milliseconds: 300),
                 pageBuilder:
-                    (context, animation, secondaryAnimation) =>
-                        HomeScreen(),
+                    (context, animation, secondaryAnimation) => HomeScreen(),
                 transitionsBuilder: (
                   context,
                   animation,
@@ -380,7 +380,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 14,
                       color: Colors.grey[600],
-                      fontWeight: medium
+                      fontWeight: medium,
                     ),
                   ),
                 ],

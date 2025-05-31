@@ -1,5 +1,5 @@
 import 'package:http/http.dart' as http;
-import 'package:katering_ibu_m_flutter/constants/index.dart';
+import 'package:katering_ibu_m_flutter/config/index.dart';
 import 'dart:convert';
 import '../models/menu_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,7 +11,7 @@ class MenuService {
 
   Future<List<Menu>> getMenus() async {
     try {
-      final response = await http.get(Uri.parse('$localHost/menus'));
+      final response = await http.get(Uri.parse('$baseUrl/menus'));
 
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);

@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:katering_ibu_m_flutter/constants/index.dart';
+import 'package:katering_ibu_m_flutter/config/index.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class NotificationService {
@@ -14,7 +14,7 @@ class NotificationService {
 
     try {
       final response = await http.get(
-        Uri.parse('$localHost/notifications'),
+        Uri.parse('$baseUrl/notifications'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',

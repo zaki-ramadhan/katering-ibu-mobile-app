@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:katering_ibu_m_flutter/config/index.dart';
 import 'package:katering_ibu_m_flutter/screens/client/login_screen.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -94,7 +95,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (_fullNameError.isEmpty &&
         _emailError.isEmpty &&
         _passwordError.isEmpty) {
-      var url = Uri.parse('$localHost/register');
+      var url = Uri.parse('$baseUrl/register');
       try {
         var response = await http.post(
           url,

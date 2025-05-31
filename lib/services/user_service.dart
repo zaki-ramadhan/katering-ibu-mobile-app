@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:katering_ibu_m_flutter/config/index.dart';
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../constants/index.dart';
 
 class UserService {
   Logger logger = Logger();
   Future<List<dynamic>> fetchUsers() async {
-    final response = await http.get(Uri.parse('$localHost/users'));
+    final response = await http.get(Uri.parse('$baseUrl/users'));
 
     if (response.statusCode == 200) {
       return json.decode(response.body);
@@ -18,7 +18,7 @@ class UserService {
 
   Future<void> createUser(Map<String, dynamic> userData) async {
     final response = await http.post(
-      Uri.parse('$localHost/users'),
+      Uri.parse('$baseUrl/users'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode(userData),
     );
@@ -30,7 +30,7 @@ class UserService {
 
   Future<void> updateUser(int userId, Map<String, dynamic> userData) async {
     final response = await http.put(
-      Uri.parse('$localHost/users/$userId'),
+      Uri.parse('$baseUrl/users/$userId'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode(userData),
     );
@@ -41,7 +41,7 @@ class UserService {
   }
 
   Future<void> deleteUser(int userId) async {
-    final response = await http.delete(Uri.parse('$localHost/users/$userId'));
+    final response = await http.delete(Uri.parse('$baseUrl/users/$userId'));
 
     if (response.statusCode != 200) {
       throw Exception('Failed to delete user');
@@ -60,7 +60,7 @@ class UserService {
     logger.i('Token fetched: $token');
 
     final response = await http.get(
-      Uri.parse('$localHost/users/profile'),
+      Uri.parse('$baseUrl/users/profile'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -96,7 +96,7 @@ class UserService {
     }
 
     final response = await http.put(
-      Uri.parse('$localHost/users/update'),
+      Uri.parse('$baseUrl/users/update'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',

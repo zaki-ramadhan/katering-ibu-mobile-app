@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:katering_ibu_m_flutter/config/index.dart';
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:katering_ibu_m_flutter/constants/index.dart';
 
 class OrderService {
   Future<List<dynamic>> fetchOrderHistory() async {
@@ -15,7 +15,7 @@ class OrderService {
     }
 
     final response = await http.get(
-      Uri.parse('$localHost/orders/history'),
+      Uri.parse('$baseUrl/orders/history'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
