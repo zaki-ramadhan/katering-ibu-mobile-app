@@ -5,6 +5,7 @@ import 'package:katering_ibu_m_flutter/constants/index.dart';
 import 'package:katering_ibu_m_flutter/models/cart_model.dart';
 import 'package:katering_ibu_m_flutter/screens/client/rating_order_scren.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_app_bar.dart';
+import 'package:katering_ibu_m_flutter/widgets/custom_notification.dart';
 import 'package:provider/provider.dart';
 
 import '../../provider/cart_provider.dart';
@@ -44,13 +45,29 @@ class _CartScreenState extends State<CartScreen> {
               child:
                   items.isEmpty
                       ? Center(
-                        child: Text(
-                          'Keranjang kosong\nTidak ada menu di keranjang',
-                          style: GoogleFonts.plusJakartaSans(
-                            color: Colors.grey,
-                            fontSize: 16,
-                          ),
-                          textAlign: TextAlign.center,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Keranjang Kosong',
+                              style: GoogleFonts.plusJakartaSans(
+                                color: primaryColor,
+                                fontSize: 20,
+                                fontWeight: bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'Tidak ada menu di keranjang\nMulai belanja sekarang!',
+                              style: GoogleFonts.plusJakartaSans(
+                                color: Colors.grey.shade600,
+                                fontSize: 16,
+                                height: 2,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
                         ),
                       )
                       : Column(
@@ -148,37 +165,43 @@ class _CartScreenState extends State<CartScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: primaryColor.withAlpha(60),
-                      width: 1,
+                // Hanya tampilkan tombol kurang jika quantity > 1
+                if (cartItem.quantity > 1) ...[
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: primaryColor.withAlpha(60),
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(99),
                     ),
-                    borderRadius: BorderRadius.circular(99),
-                  ),
-                  child: IconButton(
-                    onPressed: () {
-                      final cartProvider = Provider.of<CartProvider>(
-                        context,
-                        listen: false,
-                      );
-                      cartProvider.updateQuantity(
-                        cartItem,
-                        cartItem.quantity - 1,
-                      );
-                      setState(() {});
-                    },
-                    constraints: BoxConstraints(),
-                    icon: Icon(Icons.remove),
-                    padding: EdgeInsets.all(2),
-                    style: IconButton.styleFrom(
-                      splashFactory: InkRipple.splashFactory,
+                    child: IconButton(
+                      onPressed: () {
+                        final cartProvider = Provider.of<CartProvider>(
+                          context,
+                          listen: false,
+                        );
+                        cartProvider.updateQuantity(
+                          cartItem,
+                          cartItem.quantity - 1,
+                        );
+                        setState(() {});
+                      },
+                      constraints: BoxConstraints(),
+                      icon: Icon(Icons.remove),
+                      padding: EdgeInsets.all(2),
+                      style: IconButton.styleFrom(
+                        splashFactory: InkRipple.splashFactory,
+                      ),
                     ),
                   ),
-                ),
-                SizedBox(width: 8),
+                  SizedBox(width: 8),
+                ] else ...[
+                  // Spacer untuk mempertahankan alignment ketika tombol kurang disembunyikan
+                  SizedBox(width: 48), // 40 (width) + 8 (SizedBox)
+                ],
                 Text(
                   '${cartItem.quantity}',
                   style: GoogleFonts.plusJakartaSans(
@@ -233,58 +256,10 @@ class _CartScreenState extends State<CartScreen> {
       selectedItems.clear();
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Container(
-          padding: EdgeInsets.symmetric(vertical: 4),
-          child: Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withAlpha(51), // 0.2 * 255 = 51
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.check_circle_outline,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-              SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Berhasil dihapus!',
-                      style: GoogleFonts.plusJakartaSans(
-                        color: Colors.white,
-                        fontWeight: semibold,
-                        fontSize: 14,
-                      ),
-                    ),
-                    SizedBox(height: 2),
-                    Text(
-                      '${itemsToRemove.length} item telah dihapus dari keranjang',
-                      style: GoogleFonts.plusJakartaSans(
-                        color: Colors.white.withAlpha(229), // 0.9 * 255 = 229
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        backgroundColor: Colors.green.shade500,
-        duration: Duration(seconds: 3),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: EdgeInsets.all(16),
-      ),
+    CustomNotification.showSuccess(
+      context: context,
+      title: 'Berhasil dihapus!',
+      message: '${itemsToRemove.length} item telah dihapus dari keranjang',
     );
   }
 
@@ -394,15 +369,11 @@ class _CartScreenState extends State<CartScreen> {
               ],
             ),
             SizedBox(height: 24),
-            // Kondisi untuk menampilkan tombol
             selectedItems.isEmpty
-                ?
-                // Jika tidak ada item yang dipilih, hanya tampilkan tombol pembayaran dengan full width
-                SizedBox(
+                ? SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed:
-                        null, // Disabled karena tidak ada item yang dipilih
+                    onPressed: null,
                     style: ElevatedButton.styleFrom(
                       padding: EdgeInsets.symmetric(vertical: 18),
                       elevation: 0,
@@ -422,11 +393,8 @@ class _CartScreenState extends State<CartScreen> {
                     ),
                   ),
                 )
-                :
-                // Jika ada item yang dipilih, tampilkan kedua tombol
-                Row(
+                : Row(
                   children: [
-                    // Tombol Hapus - 1/3 lebar
                     Expanded(
                       flex: 1,
                       child: ElevatedButton(
@@ -457,7 +425,6 @@ class _CartScreenState extends State<CartScreen> {
                       ),
                     ),
                     SizedBox(width: 12),
-                    // Tombol Lanjut ke Pembayaran - 2/3 lebar
                     Expanded(
                       flex: 2,
                       child: ElevatedButton(
