@@ -106,6 +106,7 @@ class _ViewReviewsScreenState extends State<ViewReviewsScreen> {
                                       ? Colors.white
                                       : primaryColor,
                               elevation: 0,
+                              shadowColor: Colors.transparent,
                               padding: EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
@@ -139,6 +140,7 @@ class _ViewReviewsScreenState extends State<ViewReviewsScreen> {
                                       ? Colors.white
                                       : primaryColor,
                               elevation: 0,
+                              shadowColor: Colors.transparent,
                               padding: EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
