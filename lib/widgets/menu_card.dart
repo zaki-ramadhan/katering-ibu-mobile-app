@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:katering_ibu_m_flutter/constants/index.dart';
+import 'package:katering_ibu_m_flutter/models/cart_model.dart';
 import 'package:katering_ibu_m_flutter/models/menu_model.dart';
 import 'package:katering_ibu_m_flutter/provider/cart_provider.dart';
 import 'package:katering_ibu_m_flutter/screens/client/view_menu_screen.dart';
@@ -129,7 +130,12 @@ class MenuCard extends StatelessWidget {
                         Provider.of<CartProvider>(
                           context,
                           listen: false,
-                        ).addItem(menu);
+                        ).addItem(
+                          CartItem(
+                            menu: menu,
+                            quantity: 1,
+                          ),
+                        );
 
                         CustomNotification.showCart(
                           context: context,

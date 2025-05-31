@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:katering_ibu_m_flutter/constants/index.dart';
 import 'package:katering_ibu_m_flutter/models/menu_model.dart';
+import 'package:katering_ibu_m_flutter/models/cart_model.dart';
+import 'package:katering_ibu_m_flutter/provider/cart_provider.dart';
 import 'package:katering_ibu_m_flutter/screens/client/checkout_order_screen.dart';
 import 'package:katering_ibu_m_flutter/services/menu_service.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_app_bar.dart';
+import 'package:katering_ibu_m_flutter/widgets/custom_notification.dart';
+import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 
 class ViewMenu extends StatelessWidget {
   final Menu menu;
@@ -144,7 +149,8 @@ class ViewMenu extends StatelessWidget {
                       FutureBuilder<List<Menu>>(
                         future: MenuService().getMenus(),
                         builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
                             return Center(child: CircularProgressIndicator());
                           }
 
@@ -152,13 +158,18 @@ class ViewMenu extends StatelessWidget {
                             return Center(
                               child: Text(
                                 'Error: ${snapshot.error}',
-                                style: GoogleFonts.plusJakartaSans(color: Colors.red),
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: Colors.red,
+                                ),
                               ),
                             );
                           }
 
                           final allMenus = snapshot.data ?? [];
-                          return _buildSimilarMenuRecommendations(context, allMenus);
+                          return _buildSimilarMenuRecommendations(
+                            context,
+                            allMenus,
+                          );
                         },
                       ),
                     ],
@@ -173,15 +184,21 @@ class ViewMenu extends StatelessWidget {
     );
   }
 
-  Widget _buildSimilarMenuRecommendations(BuildContext context, List<Menu> allMenus) {
-    final similarMenus = allMenus.where((otherMenu) {
-      if (menu.namaMenu.contains('Nasi Liwet') && otherMenu.namaMenu.contains('Nasi Liwet')) {
-        return menu.namaMenu != otherMenu.namaMenu;
-      } else if (menu.namaMenu.contains('Nasi Kuning') && otherMenu.namaMenu.contains('Nasi Kuning')) {
-        return menu.namaMenu != otherMenu.namaMenu;
-      }
-      return false;
-    }).toList();
+  Widget _buildSimilarMenuRecommendations(
+    BuildContext context,
+    List<Menu> allMenus,
+  ) {
+    final similarMenus =
+        allMenus.where((otherMenu) {
+          if (menu.namaMenu.contains('Nasi Liwet') &&
+              otherMenu.namaMenu.contains('Nasi Liwet')) {
+            return menu.namaMenu != otherMenu.namaMenu;
+          } else if (menu.namaMenu.contains('Nasi Kuning') &&
+              otherMenu.namaMenu.contains('Nasi Kuning')) {
+            return menu.namaMenu != otherMenu.namaMenu;
+          }
+          return false;
+        }).toList();
 
     if (similarMenus.isEmpty) {
       return SizedBox();
@@ -212,7 +229,10 @@ class ViewMenu extends StatelessWidget {
                 padding: EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  border: Border.all(color: Colors.blueGrey.shade100.withAlpha(150), width: 0.8),
+                  border: Border.all(
+                    color: Colors.blueGrey.shade100.withAlpha(150),
+                    width: 0.8,
+                  ),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -352,18 +372,27 @@ class ViewMenu extends StatelessWidget {
             Expanded(
               flex: 1,
               child: ElevatedButton(
-                onPressed: () => Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    transitionDuration: Duration(milliseconds: 300),
-                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                      return FadeTransition(opacity: animation, child: child);
-                    },
-                    pageBuilder: (context, animation, secondaryAnimation) {
-                      return CheckoutOrderScreen();
-                    },
-                  ),
-                ),
+                onPressed:
+                    () => Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                        transitionDuration: Duration(milliseconds: 300),
+                        transitionsBuilder: (
+                          context,
+                          animation,
+                          secondaryAnimation,
+                          child,
+                        ) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: child,
+                          );
+                        },
+                        pageBuilder: (context, animation, secondaryAnimation) {
+                          return CheckoutOrderScreen();
+                        },
+                      ),
+                    ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
                   padding: EdgeInsets.symmetric(vertical: 20),
@@ -390,65 +419,214 @@ class ViewMenu extends StatelessWidget {
   }
 
   void _buildAddToCartModal(BuildContext context) {
+    int quantity = 1;
+    final NumberFormat rupiahFormat = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp',
+      decimalDigits: 0,
+    );
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setState) {
-            return Padding(
-              padding: EdgeInsets.fromLTRB(24, 24, 24, 28),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    'Jumlah Pesanan',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 18,
-                      fontWeight: semibold,
-                      color: primaryColor,
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 18),
-                        backgroundColor: primaryColor,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      child: Text(
-                        'Tambah ke Keranjang',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 16,
-                          color: white,
-                          fontWeight: medium,
+            return Container(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(24, 20, 24, 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Handle indicator
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(2),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                    SizedBox(height: 20),
+
+                    // Menu info
+                    Row(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            menu.foto,
+                            width: 80,
+                            height: 80,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                width: 80,
+                                height: 80,
+                                color: Colors.grey[300],
+                                child: Icon(Icons.image_not_supported),
+                              );
+                            },
+                          ),
+                        ),
+                        SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                menu.namaMenu,
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 18,
+                                  fontWeight: semibold,
+                                  color: primaryColor,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                rupiahFormat.format(menu.harga),
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 16,
+                                  fontWeight: bold,
+                                  color: primaryColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(height: 24),
+
+                    // Quantity selector
+                    Text(
+                      'Jumlah Pesanan',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 16,
+                        fontWeight: semibold,
+                        color: primaryColor,
+                      ),
+                    ),
+                    SizedBox(height: 12),
+
+                    Row(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              IconButton(
+                                onPressed:
+                                    quantity > 1
+                                        ? () {
+                                          setState(() {
+                                            quantity--;
+                                          });
+                                        }
+                                        : null,
+                                icon: Icon(Icons.remove),
+                                color:
+                                    quantity > 1 ? primaryColor : Colors.grey,
+                              ),
+                              Container(
+                                width: 50,
+                                alignment: Alignment.center,
+                                child: Text(
+                                  '$quantity',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 18,
+                                    fontWeight: bold,
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    quantity++;
+                                  });
+                                },
+                                icon: Icon(Icons.add),
+                                color: primaryColor,
+                              ),
+                            ],
+                          ),
+                        ),
+                        Spacer(),
+                        Text(
+                          'Subtotal: ${rupiahFormat.format(menu.harga * quantity)}',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 16,
+                            fontWeight: bold,
+                            color: primaryColor,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(height: 24),
+
+                    // Add to cart button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          final cartProvider = Provider.of<CartProvider>(
+                            context,
+                            listen: false,
+                          );
+
+                          final cartItem = CartItem(
+                            menu: menu,
+                            quantity: quantity,
+                          );
+
+                          cartProvider.addItem(cartItem);
+
+                          Navigator.pop(context);
+
+                          CustomNotification.showSuccess(
+                            context: context,
+                            title: 'Berhasil ditambahkan!',
+                            message:
+                                '$quantity item ${menu.namaMenu} telah ditambahkan ke keranjang',
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          backgroundColor: primaryColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          'Tambah ke Keranjang',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 16,
+                            color: white,
+                            fontWeight: semibold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           },

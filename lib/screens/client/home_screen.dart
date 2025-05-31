@@ -11,6 +11,7 @@ import 'package:katering_ibu_m_flutter/services/ulasan_service.dart';
 import 'package:katering_ibu_m_flutter/services/user_service.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_bottom_bar.dart';
 import 'package:katering_ibu_m_flutter/widgets/menu_card.dart';
+import 'package:katering_ibu_m_flutter/widgets/review_card.dart';
 import 'package:katering_ibu_m_flutter/services/menu_service.dart';
 import 'package:logger/logger.dart';
 
@@ -494,137 +495,7 @@ class _HomeScreenState extends State<HomeScreen> {
           separatorBuilder: (context, index) => SizedBox(height: 16),
           itemBuilder: (context, index) {
             final ulasan = displayedUlasans[index];
-            return Container(
-              padding: EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.shade200, width: 1),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(12),
-                    blurRadius: 12,
-                    offset: Offset(0, 4),
-                    spreadRadius: 0,
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: primaryColor.withAlpha(51),
-                            width: 2,
-                          ),
-                          image: DecorationImage(
-                            image:
-                                ulasan.user.fotoProfil != null
-                                    ? NetworkImage(ulasan.user.fotoProfil!)
-                                    : const AssetImage(
-                                          'assets/images/default_profile.jpg',
-                                        )
-                                        as ImageProvider,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  ulasan.user.nama,
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontWeight: bold,
-                                    color: primaryColor,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                SizedBox(width: 8),
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 3,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue.shade50,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: Colors.blue.shade200,
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: Text(
-                                    'Customer',
-                                    style: GoogleFonts.plusJakartaSans(
-                                      color: Colors.blue.shade600,
-                                      fontSize: 10,
-                                      fontWeight: semibold,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              ulasan.waktu,
-                              style: GoogleFonts.plusJakartaSans(
-                                color: Colors.grey.shade500,
-                                fontSize: 12,
-                                fontWeight: medium,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 16),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: primaryColor.withAlpha(25),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(
-                          Icons.format_quote,
-                          size: 16,
-                          color: primaryColor,
-                        ),
-                      ),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          ulasan.pesan,
-                          style: GoogleFonts.plusJakartaSans(
-                            color: primaryColor,
-                            fontSize: 14,
-                            fontWeight: medium,
-                            height: 1.5,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            );
+            return ReviewCard(ulasan: ulasan, isCompact: true);
           },
         ),
         SizedBox(height: 24),
@@ -643,7 +514,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   return FadeTransition(opacity: animation, child: child);
                 },
                 pageBuilder: (context, animation, secondaryAnimation) {
-                  return AllReviewsScreen();
+                  return ViewReviewsScreen();
                 },
               ),
             );

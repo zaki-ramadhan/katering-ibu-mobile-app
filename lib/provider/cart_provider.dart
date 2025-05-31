@@ -32,12 +32,12 @@ class CartProvider extends ChangeNotifier {
     await prefs.setString('cart_items', json.encode(jsonList));
   }
 
-  void addItem(Menu menu) {
-    int index = _cartItems.indexWhere((item) => item.menu.id == menu.id);
+  void addItem(CartItem cartItem) {
+    int index = _cartItems.indexWhere((item) => item.menu.id == cartItem.menu.id);
     if (index != -1) {
-      _cartItems[index].incrementQuantity();
+      _cartItems[index].quantity += cartItem.quantity;
     } else {
-      _cartItems.add(CartItem(menu: menu));
+      _cartItems.add(cartItem);
     }
     saveCart();
     notifyListeners();
