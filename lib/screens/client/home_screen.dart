@@ -7,6 +7,7 @@ import 'package:katering_ibu_m_flutter/models/ulasan_model.dart';
 import 'package:katering_ibu_m_flutter/screens/client/view_reviews_screen.dart';
 import 'package:katering_ibu_m_flutter/screens/client/notification_screen.dart';
 import 'package:katering_ibu_m_flutter/screens/client/search_menu_screen.dart';
+import 'package:katering_ibu_m_flutter/screens/client/cust_account_screen.dart';
 import 'package:katering_ibu_m_flutter/services/ulasan_service.dart';
 import 'package:katering_ibu_m_flutter/services/user_service.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_bottom_bar.dart';
@@ -49,6 +50,21 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (e) {
       logger.i('Error fetching user data: $e');
     }
+  }
+
+  void _navigateToAccount() {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        transitionDuration: Duration(milliseconds: 300),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return CustomerAccount();
+        },
+      ),
+    );
   }
 
   @override
@@ -109,41 +125,70 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            spacing: 4,
-            children: [
-              profileImage != null && profileImage!.isNotEmpty
-                  ? CircleAvatar(
-                    radius: 24,
-                    backgroundColor: Colors.grey.shade300,
-                    backgroundImage: NetworkImage(profileImage!),
-                  )
-                  : ProfilePicture(name: name ?? '', radius: 24, fontsize: 18),
-              const SizedBox(width: 10),
-              Column(
-                spacing: 1,
-                crossAxisAlignment: CrossAxisAlignment.start,
+          GestureDetector(
+            onTap: _navigateToAccount,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
                 children: [
-                  Text(
-                    name ?? '',
-                    style: GoogleFonts.plusJakartaSans(
-                      color: Colors.white,
-                      fontWeight: semibold,
-                      fontSize: 18,
-                    ),
+                  Container(
+                    child:
+                        profileImage != null && profileImage!.isNotEmpty
+                            ? CircleAvatar(
+                              radius: 24,
+                              backgroundColor: Colors.grey.shade300,
+                              backgroundImage: NetworkImage(profileImage!),
+                            )
+                            : ProfilePicture(
+                              name: name ?? '',
+                              radius: 24,
+                              fontsize: 18,
+                            ),
                   ),
-                  Text(
-                    phone ?? '',
-                    style: GoogleFonts.plusJakartaSans(
-                      color: Colors.grey[400],
-                      fontSize: 14,
-                      fontWeight: medium,
-                    ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            name ?? '',
+                            style: GoogleFonts.plusJakartaSans(
+                              color: Colors.white,
+                              fontWeight: semibold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            color: Colors.white.withAlpha(180),
+                            size: 14,
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        phone ?? '',
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Colors.grey[400],
+                          fontSize: 14,
+                          fontWeight: medium,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
+
+          // Notification Button
           Container(
             decoration: BoxDecoration(
               color: white.withAlpha(20),

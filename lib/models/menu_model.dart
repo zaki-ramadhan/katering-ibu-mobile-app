@@ -1,12 +1,16 @@
-import 'package:intl/intl.dart'; 
+import 'package:intl/intl.dart';
 
 class Menu {
   final int id;
-  final String foto;
   final String namaMenu;
   final String deskripsi;
-  final double harga; 
+  final double harga;
+  final String foto;
   final int terjual;
+  final String? kategori;
+  final String? status;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   static final currencyFormatter = NumberFormat.currency(
     locale: 'id_ID',
@@ -16,64 +20,52 @@ class Menu {
 
   Menu({
     required this.id,
-    required this.foto,
     required this.namaMenu,
     required this.deskripsi,
     required this.harga,
-    required this.terjual,
+    required this.foto,
+    this.terjual = 0,
+    this.kategori,
+    this.status,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory Menu.fromJson(Map<String, dynamic> json) {
     return Menu(
       id: json['id'] ?? 0,
-      foto: json['foto'] ?? '',
-      namaMenu: json['nama'] ?? '',
+      namaMenu: json['nama_menu'] ?? '',
       deskripsi: json['deskripsi'] ?? '',
-      harga: json['harga'] != null 
-          ? double.tryParse(json['harga'].toString()) ?? 0.0 
-          : 0.0,
+      harga: double.tryParse(json['harga'].toString()) ?? 0.0,
+      foto: json['foto'] ?? '',
       terjual: json['terjual'] ?? 0,
+      kategori: json['kategori'],
+      status: json['status'],
+      createdAt:
+          json['created_at'] != null
+              ? DateTime.tryParse(json['created_at'])
+              : null,
+      updatedAt:
+          json['updated_at'] != null
+              ? DateTime.tryParse(json['updated_at'])
+              : null,
     );
   }
 
   String get formattedHarga => currencyFormatter.format(harga);
 
-
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'image_url': foto,
-    'nama_menu': namaMenu,
-    'deskripsi': deskripsi,
-    'harga': harga,
-    'terjual': terjual,
-  };
-
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'image': foto,
-      'name': namaMenu,
-      'description': deskripsi,
-      'price': harga,
-      'sold': terjual,
+      'nama_menu': namaMenu,
+      'deskripsi': deskripsi,
+      'harga': harga,
+      'foto': foto,
+      'terjual': terjual,
+      'kategori': kategori,
+      'status': status,
+      'created_at': createdAt?.toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String(),
     };
-  }
-
-  Menu copyWith({
-    int? id,
-    String? foto,
-    String? namaMenu,
-    String? deskripsi,
-    double? harga,
-    int? terjual,
-  }) {
-    return Menu(
-      id: id ?? this.id,
-      foto: foto ?? this.foto,
-      namaMenu: namaMenu ?? this.namaMenu,
-      deskripsi: deskripsi ?? this.deskripsi,
-      harga: harga ?? this.harga,
-      terjual: terjual ?? this.terjual,
-    );
   }
 }

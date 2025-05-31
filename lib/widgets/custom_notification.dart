@@ -48,7 +48,7 @@ class CustomNotification {
                       style: GoogleFonts.plusJakartaSans(
                         color: Colors.white.withAlpha(229),
                         fontSize: 12,
-                        fontWeight: medium
+                        fontWeight: medium,
                       ),
                     ),
                   ],
@@ -89,13 +89,35 @@ class CustomNotification {
     required String message,
     Duration duration = const Duration(seconds: 3),
   }) {
-    show(
-      context: context,
-      icon: Icons.error_outline,
-      title: title,
-      message: message,
-      backgroundColor: Colors.red,
-      duration: duration,
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(Icons.error, color: Colors.white),
+            SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  Text(message, style: TextStyle(color: Colors.white)),
+                ],
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.red,
+        duration: duration,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
     );
   }
 

@@ -1,15 +1,15 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:katering_ibu_m_flutter/constants/index.dart';
-import 'package:katering_ibu_m_flutter/models/cart_model.dart';
-import 'package:katering_ibu_m_flutter/screens/client/rating_order_scren.dart';
+import 'package:katering_ibu_m_flutter/provider/cart_provider.dart';
+import 'package:katering_ibu_m_flutter/screens/client/checkout_order_screen.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_app_bar.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_notification.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
-
-import '../../provider/cart_provider.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -30,31 +30,40 @@ class _CartScreenState extends State<CartScreen> {
   bool _isLongPressing = false;
 
   @override
+  void initState() {
+    super.initState();
+    // Load cart dari local storage
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<CartProvider>(context, listen: false).loadCartFromLocal();
+    });
+  }
+
+  @override
   void dispose() {
     _timer?.cancel();
     super.dispose();
   }
 
-  void _startIncrement(CartItem cartItem) {
+  void _startIncrement(CartItem item) {
     _isLongPressing = true;
-    _incrementQuantity(cartItem);
+    _incrementQuantity(item);
     _timer = Timer.periodic(Duration(milliseconds: 150), (timer) {
       if (_isLongPressing) {
-        _incrementQuantity(cartItem);
+        _incrementQuantity(item);
       } else {
         timer.cancel();
       }
     });
   }
 
-  void _startDecrement(CartItem cartItem) {
-    if (cartItem.quantity <= 1) return;
+  void _startDecrement(CartItem item) {
+    if (item.quantity <= 1) return;
 
     _isLongPressing = true;
-    _decrementQuantity(cartItem);
+    _decrementQuantity(item);
     _timer = Timer.periodic(Duration(milliseconds: 150), (timer) {
-      if (_isLongPressing && cartItem.quantity > 1) {
-        _decrementQuantity(cartItem);
+      if (_isLongPressing && item.quantity > 1) {
+        _decrementQuantity(item);
       } else {
         timer.cancel();
       }
@@ -66,24 +75,20 @@ class _CartScreenState extends State<CartScreen> {
     _timer?.cancel();
   }
 
-  void _incrementQuantity(CartItem cartItem) {
+  void _incrementQuantity(CartItem item) {
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
-    cartProvider.updateQuantity(cartItem, cartItem.quantity + 1);
-    setState(() {});
+    cartProvider.updateQuantity(item.menu, item.quantity + 1);
   }
 
-  void _decrementQuantity(CartItem cartItem) {
-    if (cartItem.quantity > 1) {
+  void _decrementQuantity(CartItem item) {
+    if (item.quantity > 1) {
       final cartProvider = Provider.of<CartProvider>(context, listen: false);
-      cartProvider.updateQuantity(cartItem, cartItem.quantity - 1);
-      setState(() {});
+      cartProvider.updateQuantity(item.menu, item.quantity - 1);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final cartProvider = Provider.of<CartProvider>(context);
-    List<CartItem> items = cartProvider.cartItems;
     return Scaffold(
       appBar: CustomAppBar(
         titleAppBar: 'Keranjang Saya',
@@ -92,51 +97,75 @@ class _CartScreenState extends State<CartScreen> {
         isNavigableByBottomBar: true,
       ),
       backgroundColor: Colors.white,
-      body: SizedBox(
-        child: Stack(
-          children: [
-            Container(
-              padding: EdgeInsets.symmetric(vertical: 20, horizontal: 32),
-              child:
-                  items.isEmpty
-                      ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Keranjang Kosong',
-                              style: GoogleFonts.plusJakartaSans(
-                                color: primaryColor,
-                                fontSize: 20,
-                                fontWeight: bold,
-                              ),
-                              textAlign: TextAlign.center,
+      body: Consumer<CartProvider>(
+        builder: (context, cartProvider, child) {
+          if (cartProvider.isLoading) {
+            return Center(
+              child: CircularProgressIndicator(color: primaryColor),
+            );
+          }
+
+          final items = cartProvider.cartItems;
+
+          return SizedBox(
+            child: Stack(
+              children: [
+                Container(
+                  padding: EdgeInsets.symmetric(vertical: 20, horizontal: 32),
+                  child:
+                      items.isEmpty
+                          ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.shopping_cart_outlined,
+                                  size: 80,
+                                  color: Colors.grey.shade400,
+                                ),
+                                SizedBox(height: 16),
+                                Text(
+                                  'Keranjang Kosong',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: primaryColor,
+                                    fontSize: 20,
+                                    fontWeight: bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  'Tidak ada menu di keranjang\nMulai belanja sekarang!',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: Colors.grey.shade600,
+                                    fontSize: 16,
+                                    height: 1.5,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
                             ),
-                            SizedBox(height: 8),
-                            Text(
-                              'Tidak ada menu di keranjang\nMulai belanja sekarang!',
-                              style: GoogleFonts.plusJakartaSans(
-                                color: Colors.grey.shade600,
-                                fontSize: 16,
-                                height: 2,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      )
-                      : Column(
-                        children: [
-                          for (int i = 0; i < items.length; i++)
-                            _buildItem(context, items[i], i),
-                        ],
-                      ),
+                          )
+                          : Column(
+                            children: [
+                              for (int i = 0; i < items.length; i++)
+                                _buildItem(context, items[i], i),
+                            ],
+                          ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
-      bottomNavigationBar:
-          items.isEmpty ? null : _buildCTABottomBar(context, items),
+      bottomNavigationBar: Consumer<CartProvider>(
+        builder: (context, cartProvider, child) {
+          final items = cartProvider.cartItems;
+          return items.isEmpty
+              ? SizedBox.shrink()
+              : _buildCTABottomBar(context, items);
+        },
+      ),
     );
   }
 
@@ -181,6 +210,17 @@ class _CartScreenState extends State<CartScreen> {
                         width: 70,
                         height: 70,
                         fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            width: 70,
+                            height: 70,
+                            color: Colors.grey.shade200,
+                            child: Icon(
+                              Icons.image_not_supported,
+                              color: Colors.grey,
+                            ),
+                          );
+                        },
                       )
                       : Container(
                         width: 70,
@@ -204,9 +244,7 @@ class _CartScreenState extends State<CartScreen> {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    rupiahFormat.format(
-                      cartItem.menu.harga * cartItem.quantity,
-                    ),
+                    rupiahFormat.format(cartItem.totalPrice),
                     style: GoogleFonts.plusJakartaSans(
                       color: primaryColor,
                       fontSize: 18,
@@ -220,7 +258,7 @@ class _CartScreenState extends State<CartScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                // Hanya tampilkan tombol kurang jika quantity > 1
+                // Tombol kurang
                 if (cartItem.quantity > 1) ...[
                   Container(
                     width: 40,
@@ -237,25 +275,14 @@ class _CartScreenState extends State<CartScreen> {
                       onLongPressStart: (_) => _startDecrement(cartItem),
                       onLongPressEnd: (_) => _stopAction(),
                       onLongPressCancel: () => _stopAction(),
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(99),
-                        ),
-                        child: Icon(
-                          Icons.remove,
-                          color: primaryColor,
-                          size: 20,
-                        ),
-                      ),
+                      child: Icon(Icons.remove, color: primaryColor, size: 20),
                     ),
                   ),
                   SizedBox(width: 8),
                 ] else ...[
-                  // Spacer untuk mempertahankan alignment ketika tombol kurang disembunyikan
-                  SizedBox(width: 48), // 40 (width) + 8 (SizedBox)
+                  SizedBox(width: 48),
                 ],
+                // Quantity display
                 Container(
                   constraints: BoxConstraints(minWidth: 30),
                   child: Text(
@@ -268,6 +295,7 @@ class _CartScreenState extends State<CartScreen> {
                   ),
                 ),
                 SizedBox(width: 8),
+                // Tombol tambah
                 GestureDetector(
                   onTap: () => _incrementQuantity(cartItem),
                   onLongPressStart: (_) => _startIncrement(cartItem),
@@ -291,7 +319,7 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  void _deleteSelectedItems(List<CartItem> items) {
+  void _deleteSelectedItems(List<CartItem> items) async {
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
 
     List<CartItem> itemsToRemove = [];
@@ -301,19 +329,26 @@ class _CartScreenState extends State<CartScreen> {
       }
     }
 
-    for (CartItem item in itemsToRemove) {
-      cartProvider.removeItem(item);
-    }
+    final menusToRemove = itemsToRemove.map((item) => item.menu).toList();
+    final result = await cartProvider.removeMultipleItems(menusToRemove);
 
     setState(() {
       selectedItems.clear();
     });
 
-    CustomNotification.showSuccess(
-      context: context,
-      title: 'Berhasil dihapus!',
-      message: '${itemsToRemove.length} item telah dihapus dari keranjang',
-    );
+    if (result['success']) {
+      CustomNotification.showSuccess(
+        context: context,
+        title: 'Berhasil dihapus!',
+        message: result['message'],
+      );
+    } else {
+      CustomNotification.showError(
+        context: context,
+        title: 'Gagal menghapus',
+        message: result['message'],
+      );
+    }
   }
 
   Widget _buildCTABottomBar(BuildContext context, List<CartItem> items) {
@@ -328,7 +363,7 @@ class _CartScreenState extends State<CartScreen> {
     double totalHarga = 0;
     for (int i = 0; i < items.length; i++) {
       if (selectedItems.contains(i)) {
-        totalHarga += items[i].menu.harga * items[i].quantity;
+        totalHarga += items[i].totalPrice;
       }
     }
 
@@ -341,196 +376,189 @@ class _CartScreenState extends State<CartScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (items.isNotEmpty) ...[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      if (allItemsSelected) {
-                        selectedItems.clear();
-                      } else {
-                        selectedItems.addAll(
-                          List.generate(items.length, (index) => index),
-                        );
-                      }
-                    });
-                  },
-                  child: Row(
-                    children: [
-                      Icon(
-                        allItemsSelected
-                            ? Icons.check_circle
-                            : Icons.radio_button_unchecked,
-                        color: primaryColor,
-                      ),
-                      SizedBox(width: 8),
-                      Text(
-                        allItemsSelected
-                            ? 'Batalkan pilih semua menu'
-                            : 'Pilih semua menu',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontWeight: semibold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Text.rich(
-                  TextSpan(
-                    style: GoogleFonts.plusJakartaSans(fontWeight: semibold),
-                    children: [
-                      TextSpan(
-                        text: 'Item dipilih : ',
-                        style: GoogleFonts.plusJakartaSans(
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                      TextSpan(
-                        text: '$selectedCount',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontWeight: extrabold,
-                          color: primaryColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Total Harga:',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 16,
-                    fontWeight: semibold,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-                Text(
-                  rupiahFormat.format(totalHarga),
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 18,
-                    fontWeight: bold,
-                    color: primaryColor,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 24),
-            selectedItems.isEmpty
-                ? SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: null,
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 18),
-                      elevation: 0,
-                      backgroundColor: Colors.grey.shade200,
-                      shadowColor: Colors.transparent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: Text(
-                      'Pilih item untuk melanjutkan',
-                      style: GoogleFonts.plusJakartaSans(
-                        color: Colors.grey.shade500,
-                        fontWeight: semibold,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                )
-                : Row(
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    if (allItemsSelected) {
+                      selectedItems.clear();
+                    } else {
+                      selectedItems.addAll(
+                        List.generate(items.length, (index) => index),
+                      );
+                    }
+                  });
+                },
+                child: Row(
                   children: [
-                    Expanded(
-                      flex: 1,
-                      child: ElevatedButton(
-                        onPressed: () => _deleteSelectedItems(items),
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(vertical: 18),
-                          elevation: 0,
-                          backgroundColor: Colors.white,
-                          shadowColor: Colors.transparent,
-                          side: BorderSide(
-                            color: Colors.blueGrey.shade400,
-                            width: 1.5,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          splashFactory: InkRipple.splashFactory,
-                        ),
-                        child: Text(
-                          'Hapus',
-                          style: GoogleFonts.plusJakartaSans(
-                            color: Colors.blueGrey.shade700,
-                            fontWeight: semibold,
-                            fontSize: 14,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
+                    Icon(
+                      allItemsSelected
+                          ? Icons.check_circle
+                          : Icons.radio_button_unchecked,
+                      color: primaryColor,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      allItemsSelected
+                          ? 'Batalkan pilih semua'
+                          : 'Pilih semua menu',
+                      style: GoogleFonts.plusJakartaSans(fontWeight: semibold),
+                    ),
+                  ],
+                ),
+              ),
+              Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: 'Item dipilih: ',
+                      style: GoogleFonts.plusJakartaSans(
+                        color: Colors.grey.shade600,
                       ),
                     ),
-                    SizedBox(width: 12),
-                    Expanded(
-                      flex: 2,
-                      child: ElevatedButton(
-                        onPressed:
-                            () => Navigator.push(
-                              context,
-                              PageRouteBuilder(
-                                transitionDuration: Duration(milliseconds: 300),
-                                transitionsBuilder: (
-                                  context,
-                                  animation,
-                                  secondaryAnimation,
-                                  child,
-                                ) {
-                                  return FadeTransition(
-                                    opacity: animation,
-                                    child: child,
-                                  );
-                                },
-                                pageBuilder: (
-                                  context,
-                                  animation,
-                                  secondaryAnimation,
-                                ) {
-                                  return RatingOrderScren();
-                                },
-                              ),
-                            ),
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(vertical: 18),
-                          elevation: 0,
-                          backgroundColor: primaryColor,
-                          shadowColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          splashFactory: InkRipple.splashFactory,
-                        ),
-                        child: Text(
-                          'Lanjut ke Pembayaran',
-                          style: GoogleFonts.plusJakartaSans(
-                            color: Colors.white,
-                            fontWeight: semibold,
-                            fontSize: 16,
-                          ),
-                        ),
+                    TextSpan(
+                      text: '$selectedCount',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontWeight: bold,
+                        color: primaryColor,
                       ),
                     ),
                   ],
                 ),
-          ],
+              ),
+            ],
+          ),
+          SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Total Harga:',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 16,
+                  fontWeight: semibold,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+              Text(
+                rupiahFormat.format(totalHarga),
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 18,
+                  fontWeight: bold,
+                  color: primaryColor,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 24),
+          selectedItems.isEmpty
+              ? SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: null,
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 18),
+                    backgroundColor: Colors.grey.shade200,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: Text(
+                    'Pilih item untuk melanjutkan',
+                    style: GoogleFonts.plusJakartaSans(
+                      color: Colors.grey.shade500,
+                      fontWeight: semibold,
+                    ),
+                  ),
+                ),
+              )
+              : Row(
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: ElevatedButton(
+                      onPressed: () => _deleteSelectedItems(items),
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(vertical: 18),
+                        backgroundColor: Colors.white,
+                        side: BorderSide(color: Colors.blueGrey.shade400),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: Text(
+                        'Hapus',
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Colors.blueGrey.shade700,
+                          fontWeight: semibold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 12),
+                  Expanded(
+                    flex: 2,
+                    child: Consumer<CartProvider>(
+                      builder: (context, cartProvider, child) {
+                        return ElevatedButton(
+                          onPressed:
+                              cartProvider.isSyncing
+                                  ? null
+                                  : () => _proceedToCheckout(context),
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(vertical: 18),
+                            backgroundColor: primaryColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child:
+                              cartProvider.isSyncing
+                                  ? SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                  : Text(
+                                    'Lanjut ke Pembayaran',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color: Colors.white,
+                                      fontWeight: semibold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
         ],
       ),
     );
+  }
+
+  void _proceedToCheckout(BuildContext context) async {
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+
+    final result = await cartProvider.syncCartToBackend();
+
+    if (result['success']) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => CheckoutOrderScreen()),
+      );
+    } else {
+      CustomNotification.showError(
+        context: context,
+        title: 'Gagal memproses',
+        message: result['message'],
+      );
+    }
   }
 }

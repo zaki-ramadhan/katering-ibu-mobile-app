@@ -1,8 +1,9 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:katering_ibu_m_flutter/constants/index.dart';
 import 'package:katering_ibu_m_flutter/models/menu_model.dart';
-import 'package:katering_ibu_m_flutter/models/cart_model.dart';
 import 'package:katering_ibu_m_flutter/provider/cart_provider.dart';
 import 'package:katering_ibu_m_flutter/screens/client/checkout_order_screen.dart';
 import 'package:katering_ibu_m_flutter/services/menu_service.dart';
@@ -583,47 +584,65 @@ class ViewMenu extends StatelessWidget {
                     SizedBox(height: 24),
 
                     // Add to cart button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          final cartProvider = Provider.of<CartProvider>(
-                            context,
-                            listen: false,
-                          );
+                    Consumer<CartProvider>(
+                      builder: (context, cartProvider, child) {
+                        return SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              final result = await cartProvider.addItem(
+                                menu: menu,
+                                quantity: quantity,
+                              );
 
-                          final cartItem = CartItem(
-                            menu: menu,
-                            quantity: quantity,
-                          );
+                              Navigator.pop(context);
 
-                          cartProvider.addItem(cartItem);
-
-                          Navigator.pop(context);
-
-                          CustomNotification.showSuccess(
-                            context: context,
-                            title: 'Berhasil ditambahkan!',
-                            message:
-                                '$quantity item ${menu.namaMenu} telah ditambahkan ke keranjang',
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(vertical: 16),
-                          backgroundColor: primaryColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                              if (result['success']) {
+                                CustomNotification.showSuccess(
+                                  context: context,
+                                  title: 'Berhasil ditambahkan!',
+                                  message:
+                                      '$quantity item ${menu.namaMenu} telah ditambahkan ke keranjang',
+                                );
+                              } else {
+                                CustomNotification.showError(
+                                  context: context,
+                                  title: 'Gagal menambahkan',
+                                  message: result['message'],
+                                );
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              padding: EdgeInsets.symmetric(vertical: 16),
+                              backgroundColor: primaryColor,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child:
+                                cartProvider.isLoading
+                                    ? SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              Colors.white,
+                                            ),
+                                      ),
+                                    )
+                                    : Text(
+                                      'Tambah ke Keranjang',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 16,
+                                        color: white,
+                                        fontWeight: semibold,
+                                      ),
+                                    ),
                           ),
-                        ),
-                        child: Text(
-                          'Tambah ke Keranjang',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 16,
-                            color: white,
-                            fontWeight: semibold,
-                          ),
-                        ),
-                      ),
+                        );
+                      },
                     ),
                   ],
                 ),

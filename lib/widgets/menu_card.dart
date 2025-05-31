@@ -1,7 +1,8 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:katering_ibu_m_flutter/constants/index.dart';
-import 'package:katering_ibu_m_flutter/models/cart_model.dart';
 import 'package:katering_ibu_m_flutter/models/menu_model.dart';
 import 'package:katering_ibu_m_flutter/provider/cart_provider.dart';
 import 'package:katering_ibu_m_flutter/screens/client/view_menu_screen.dart';
@@ -12,11 +13,7 @@ class MenuCard extends StatelessWidget {
   final Menu menu;
   final bool showCartButton;
 
-  const MenuCard({
-    super.key,
-    required this.menu,
-    this.showCartButton = true,
-  });
+  const MenuCard({super.key, required this.menu, this.showCartButton = true});
 
   @override
   Widget build(BuildContext context) {
@@ -125,50 +122,75 @@ class MenuCard extends StatelessWidget {
                 if (showCartButton)
                   Expanded(
                     flex: 1,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Provider.of<CartProvider>(
-                          context,
-                          listen: false,
-                        ).addItem(
-                          CartItem(
-                            menu: menu,
-                            quantity: 1,
-                          ),
-                        );
+                    child: Consumer<CartProvider>(
+                      builder: (context, cartProvider, child) {
+                        return ElevatedButton(
+                          onPressed:
+                              cartProvider.isLoading
+                                  ? null
+                                  : () async {
+                                    final result = await cartProvider.addItem(
+                                      menu: menu,
+                                      quantity: 1,
+                                    );
 
-                        CustomNotification.showCart(
-                          context: context,
-                          menuName: menu.namaMenu,
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        shadowColor: Colors.transparent,
-                        foregroundColor: primaryColor,
-                        backgroundColor: white,
-                        padding: EdgeInsets.fromLTRB(13, 13, 10, 13),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(
-                            color: primaryColor.withAlpha(120),
-                            width: 1.2,
-                          ),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.shopping_cart_rounded, size: 20),
-                          Text(
-                            '+',
-                            style: GoogleFonts.plusJakartaSans(
-                              fontWeight: extrabold,
-                              fontSize: 16,
+                                    if (result['success']) {
+                                      CustomNotification.showCart(
+                                        context: context,
+                                        menuName: menu.namaMenu,
+                                      );
+                                    } else {
+                                      CustomNotification.showError(
+                                        context: context,
+                                        title: 'Gagal menambahkan',
+                                        message: result['message'],
+                                      );
+                                    }
+                                  },
+                          style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            shadowColor: Colors.transparent,
+                            foregroundColor: primaryColor,
+                            backgroundColor: white,
+                            padding: EdgeInsets.fromLTRB(13, 13, 10, 13),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: BorderSide(
+                                color: primaryColor.withAlpha(120),
+                                width: 1.2,
+                              ),
                             ),
                           ),
-                        ],
-                      ),
+                          child:
+                              cartProvider.isLoading
+                                  ? SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        primaryColor,
+                                      ),
+                                    ),
+                                  )
+                                  : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.shopping_cart_rounded,
+                                        size: 20,
+                                      ),
+                                      Text(
+                                        '+',
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontWeight: extrabold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                        );
+                      },
                     ),
                   ),
               ],
