@@ -23,7 +23,7 @@ class CustomNotification {
               Container(
                 padding: EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withAlpha(51), // 0.2 * 255
+                  color: Colors.white.withAlpha(51),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(icon, color: Colors.white, size: 20),
@@ -46,8 +46,9 @@ class CustomNotification {
                     Text(
                       message,
                       style: GoogleFonts.plusJakartaSans(
-                        color: Colors.white.withAlpha(229), // 0.9 * 255
+                        color: Colors.white.withAlpha(229),
                         fontSize: 12,
+                        fontWeight: medium
                       ),
                     ),
                   ],

@@ -1,16 +1,12 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:katering_ibu_m_flutter/config/index.dart';
-import 'package:logger/logger.dart';
 import 'package:flutter/material.dart';
-import 'package:katering_ibu_m_flutter/screens/client/home_screen.dart';
-import 'package:katering_ibu_m_flutter/screens/client/sign_up_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../../constants/index.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-
 import 'package:google_fonts/google_fonts.dart';
+import 'package:katering_ibu_m_flutter/screens/client/home_screen.dart';
+import 'package:katering_ibu_m_flutter/screens/client/register_screen.dart';
+import 'package:katering_ibu_m_flutter/services/auth_service.dart';
+import 'package:katering_ibu_m_flutter/widgets/custom_notification.dart';
+import '../../constants/index.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -20,8 +16,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  Logger logger = Logger();
   bool _rememberMe = false;
+  bool _isLoading = false;
 
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -75,44 +71,21 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _checkLoginStatus() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
-      final userId = prefs.getInt('user_id');
-      final rememberMe = prefs.getBool('remember_me') ?? false;
-
-      if (token != null && userId != null && rememberMe) {
-        Future.microtask(() {
-          Navigator.pushReplacement(
-            context,
-            PageRouteBuilder(
-              transitionDuration: const Duration(milliseconds: 300),
-              pageBuilder:
-                  (context, animation, secondaryAnimation) =>
-                      const HomeScreen(),
-              transitionsBuilder: (
-                context,
-                animation,
-                secondaryAnimation,
-                child,
-              ) {
-                return FadeTransition(opacity: animation, child: child);
-              },
-            ),
-          );
-        });
-      } else if (!rememberMe) {
-        await prefs.remove('token');
-        await prefs.remove('user_id');
-        await prefs.remove('user_name');
-        await prefs.remove('user_role');
-        await prefs.remove('saved_username');
-        await prefs.remove('saved_password');
-      }
-    } catch (e) {
-      var logger = Logger();
-      logger.d('Error checking login status: $e');
+    final isLoggedIn = await AuthService.checkLoginStatus();
+    if (isLoggedIn) {
+      _navigateToHome();
     }
+  }
+
+  Future<void> _loadSavedCredentials() async {
+    final credentials = await AuthService.getSavedCredentials();
+    setState(() {
+      _rememberMe = credentials['remember_me'] == 'true';
+      if (_rememberMe) {
+        _usernameController.text = credentials['username'] ?? '';
+        _passwordController.text = credentials['password'] ?? '';
+      }
+    });
   }
 
   Future<void> _submitForm() async {
@@ -126,131 +99,52 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     if (_usernameError.isEmpty && _passwordError.isEmpty) {
-      try {
-        showDialog(
+      setState(() {
+        _isLoading = true;
+      });
+
+      final result = await AuthService.login(
+        username: _usernameController.text.trim(),
+        password: _passwordController.text.trim(),
+        rememberMe: _rememberMe,
+      );
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (result['success']) {
+        CustomNotification.showSuccess(
           context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
-            return Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
-              ),
-            );
-          },
+          title: 'Login Berhasil',
+          message: 'Selamat datang, ${result['user']['name']}!',
+          duration: Duration(seconds: 2),
         );
 
-        final response = await http.post(
-          Uri.parse('$baseUrl/login'),
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: jsonEncode({
-            'username': _usernameController.text.trim(),
-            'password': _passwordController.text.trim(),
-          }),
+        Future.delayed(const Duration(seconds: 2), () {
+          _navigateToHome();
+        });
+      } else {
+        CustomNotification.showError(
+          context: context,
+          title: 'Login Gagal',
+          message: result['message'],
         );
-
-        Navigator.pop(context);
-
-        final data = jsonDecode(response.body);
-
-        if (response.statusCode == 200) {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('token', data['token']);
-          logger.i('Token saved: ${data['token']}');
-          await prefs.setInt('user_id', data['user']['id']);
-          await prefs.setString('user_name', data['user']['name']);
-          await prefs.setString('user_role', data['user']['role']);
-
-          await prefs.setBool('remember_me', _rememberMe);
-          if (_rememberMe) {
-            await prefs.setString(
-              'saved_username',
-              _usernameController.text.trim(),
-            );
-            await prefs.setString(
-              'saved_password',
-              _passwordController.text.trim(),
-            );
-          } else {
-            await prefs.remove('saved_username');
-            await prefs.remove('saved_password');
-          }
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Selamat datang, ${data['user']['name']}!',
-                style: GoogleFonts.plusJakartaSans(),
-              ),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 1),
-            ),
-          );
-
-          Future.delayed(const Duration(seconds: 1), () {
-            Navigator.pushReplacement(
-              context,
-              PageRouteBuilder(
-                transitionDuration: const Duration(milliseconds: 300),
-                pageBuilder:
-                    (context, animation, secondaryAnimation) => HomeScreen(),
-                transitionsBuilder: (
-                  context,
-                  animation,
-                  secondaryAnimation,
-                  child,
-                ) {
-                  return FadeTransition(opacity: animation, child: child);
-                },
-              ),
-            );
-          });
-        } else {
-          _showErrorDialog(data['message'] ?? 'Terjadi kesalahan');
-        }
-      } catch (e) {
-        logger.e('Login error: $e');
-        _showErrorDialog('Terjadi kesalahan koneksi');
       }
     }
   }
 
-  Future<void> _loadSavedCredentials() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _rememberMe = prefs.getBool('remember_me') ?? false;
-      if (_rememberMe) {
-        _usernameController.text = prefs.getString('saved_username') ?? '';
-        _passwordController.text = prefs.getString('saved_password') ?? '';
-      }
-    });
-  }
-
-  void _showErrorDialog(String message) {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text(
-              'Gagal Login',
-              style: GoogleFonts.plusJakartaSans(fontWeight: semibold),
-            ),
-            content: Text(message, style: GoogleFonts.plusJakartaSans()),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  'OK',
-                  style: GoogleFonts.plusJakartaSans(
-                    color: primaryColor,
-                    fontWeight: semibold,
-                  ),
-                ),
-              ),
-            ],
-          ),
+  void _navigateToHome() {
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 300),
+        pageBuilder:
+            (context, animation, secondaryAnimation) => const HomeScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+      ),
     );
   }
 
@@ -324,6 +218,7 @@ class _LoginScreenState extends State<LoginScreen> {
               TextField(
                 controller: _usernameController,
                 focusNode: _usernameFocusNode,
+                enabled: !_isLoading,
                 decoration: _inputDecoration(
                   hint: _usernameFocusNode.hasFocus ? '' : 'JohnDoe123',
                   errorText: _usernameError,
@@ -338,6 +233,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 controller: _passwordController,
                 obscureText: _showPassword,
                 focusNode: _passwordFocusNode,
+                enabled: !_isLoading,
                 decoration: _inputDecoration(
                   hint: _passwordFocusNode.hasFocus ? '' : '• • • • • •',
                   errorText: _passwordError,
@@ -369,11 +265,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   Checkbox(
                     value: _rememberMe,
                     activeColor: primaryColor,
-                    onChanged: (bool? value) {
-                      setState(() {
-                        _rememberMe = value ?? false;
-                      });
-                    },
+                    onChanged:
+                        _isLoading
+                            ? null
+                            : (bool? value) {
+                              setState(() {
+                                _rememberMe = value ?? false;
+                              });
+                            },
                   ),
                   Text(
                     'Ingat Saya',
@@ -391,22 +290,35 @@ class _LoginScreenState extends State<LoginScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _submitForm,
+                  onPressed: _isLoading ? null : _submitForm,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryColor,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
+                    disabledBackgroundColor: primaryColor.withOpacity(0.6),
                   ),
-                  child: Text(
-                    'Masuk',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 16,
-                      fontWeight: medium,
-                      color: Colors.white,
-                    ),
-                  ),
+                  child:
+                      _isLoading
+                          ? SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
+                            ),
+                          )
+                          : Text(
+                            'Masuk',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 16,
+                              fontWeight: medium,
+                              color: Colors.white,
+                            ),
+                          ),
                 ),
               ),
               const SizedBox(height: 36),
@@ -430,35 +342,39 @@ class _LoginScreenState extends State<LoginScreen> {
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                       onPressed:
-                          () => Navigator.push(
-                            context,
-                            PageRouteBuilder(
-                              transitionDuration: Duration(milliseconds: 300),
-                              transitionsBuilder: (
+                          _isLoading
+                              ? null
+                              : () => Navigator.push(
                                 context,
-                                animation,
-                                secondaryAnimation,
-                                child,
-                              ) {
-                                return FadeTransition(
-                                  opacity: animation,
-                                  child: child,
-                                );
-                              },
-                              pageBuilder: (
-                                context,
-                                animation,
-                                secondaryAnimation,
-                              ) {
-                                return SignUpScreen();
-                              },
-                            ),
-                          ),
+                                PageRouteBuilder(
+                                  transitionDuration: Duration(
+                                    milliseconds: 300,
+                                  ),
+                                  transitionsBuilder: (
+                                    context,
+                                    animation,
+                                    secondaryAnimation,
+                                    child,
+                                  ) {
+                                    return FadeTransition(
+                                      opacity: animation,
+                                      child: child,
+                                    );
+                                  },
+                                  pageBuilder: (
+                                    context,
+                                    animation,
+                                    secondaryAnimation,
+                                  ) {
+                                    return Register();
+                                  },
+                                ),
+                              ),
                       child: Text(
                         'Daftar',
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 16,
-                          color: primaryColor,
+                          color: _isLoading ? Colors.grey : primaryColor,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
