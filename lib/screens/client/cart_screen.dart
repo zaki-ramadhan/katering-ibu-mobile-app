@@ -7,6 +7,7 @@ import 'package:katering_ibu_m_flutter/screens/client/rating_order_scren.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_app_bar.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_notification.dart';
 import 'package:provider/provider.dart';
+import 'dart:async';
 
 import '../../provider/cart_provider.dart';
 
@@ -24,6 +25,60 @@ class _CartScreenState extends State<CartScreen> {
     symbol: 'Rp',
     decimalDigits: 0,
   );
+
+  Timer? _timer;
+  bool _isLongPressing = false;
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _startIncrement(CartItem cartItem) {
+    _isLongPressing = true;
+    _incrementQuantity(cartItem);
+    _timer = Timer.periodic(Duration(milliseconds: 150), (timer) {
+      if (_isLongPressing) {
+        _incrementQuantity(cartItem);
+      } else {
+        timer.cancel();
+      }
+    });
+  }
+
+  void _startDecrement(CartItem cartItem) {
+    if (cartItem.quantity <= 1) return;
+
+    _isLongPressing = true;
+    _decrementQuantity(cartItem);
+    _timer = Timer.periodic(Duration(milliseconds: 150), (timer) {
+      if (_isLongPressing && cartItem.quantity > 1) {
+        _decrementQuantity(cartItem);
+      } else {
+        timer.cancel();
+      }
+    });
+  }
+
+  void _stopAction() {
+    _isLongPressing = false;
+    _timer?.cancel();
+  }
+
+  void _incrementQuantity(CartItem cartItem) {
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+    cartProvider.updateQuantity(cartItem, cartItem.quantity + 1);
+    setState(() {});
+  }
+
+  void _decrementQuantity(CartItem cartItem) {
+    if (cartItem.quantity > 1) {
+      final cartProvider = Provider.of<CartProvider>(context, listen: false);
+      cartProvider.updateQuantity(cartItem, cartItem.quantity - 1);
+      setState(() {});
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -177,23 +232,22 @@ class _CartScreenState extends State<CartScreen> {
                       ),
                       borderRadius: BorderRadius.circular(99),
                     ),
-                    child: IconButton(
-                      onPressed: () {
-                        final cartProvider = Provider.of<CartProvider>(
-                          context,
-                          listen: false,
-                        );
-                        cartProvider.updateQuantity(
-                          cartItem,
-                          cartItem.quantity - 1,
-                        );
-                        setState(() {});
-                      },
-                      constraints: BoxConstraints(),
-                      icon: Icon(Icons.remove),
-                      padding: EdgeInsets.all(2),
-                      style: IconButton.styleFrom(
-                        splashFactory: InkRipple.splashFactory,
+                    child: GestureDetector(
+                      onTap: () => _decrementQuantity(cartItem),
+                      onLongPressStart: (_) => _startDecrement(cartItem),
+                      onLongPressEnd: (_) => _stopAction(),
+                      onLongPressCancel: () => _stopAction(),
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(99),
+                        ),
+                        child: Icon(
+                          Icons.remove,
+                          color: primaryColor,
+                          size: 20,
+                        ),
                       ),
                     ),
                   ),
@@ -202,32 +256,31 @@ class _CartScreenState extends State<CartScreen> {
                   // Spacer untuk mempertahankan alignment ketika tombol kurang disembunyikan
                   SizedBox(width: 48), // 40 (width) + 8 (SizedBox)
                 ],
-                Text(
-                  '${cartItem.quantity}',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontWeight: semibold,
-                    fontSize: 18,
+                Container(
+                  constraints: BoxConstraints(minWidth: 30),
+                  child: Text(
+                    '${cartItem.quantity}',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontWeight: semibold,
+                      fontSize: 18,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ),
                 SizedBox(width: 8),
-                IconButton(
-                  onPressed: () {
-                    final cartProvider = Provider.of<CartProvider>(
-                      context,
-                      listen: false,
-                    );
-                    cartProvider.updateQuantity(
-                      cartItem,
-                      cartItem.quantity + 1,
-                    );
-                    setState(() {});
-                  },
-                  icon: Icon(Icons.add),
-                  color: Colors.white,
-                  padding: EdgeInsets.all(6),
-                  style: IconButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    splashFactory: InkRipple.splashFactory,
+                GestureDetector(
+                  onTap: () => _incrementQuantity(cartItem),
+                  onLongPressStart: (_) => _startIncrement(cartItem),
+                  onLongPressEnd: (_) => _stopAction(),
+                  onLongPressCancel: () => _stopAction(),
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: primaryColor,
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                    child: Icon(Icons.add, color: Colors.white, size: 20),
                   ),
                 ),
               ],
