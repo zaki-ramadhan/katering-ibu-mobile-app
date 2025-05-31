@@ -4,6 +4,7 @@ import 'package:katering_ibu_m_flutter/constants/index.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:katering_ibu_m_flutter/models/menu_model.dart';
 import 'package:katering_ibu_m_flutter/models/ulasan_model.dart';
+import 'package:katering_ibu_m_flutter/screens/client/view_reviews_screen.dart';
 import 'package:katering_ibu_m_flutter/screens/client/notification_screen.dart';
 import 'package:katering_ibu_m_flutter/screens/client/search_menu_screen.dart';
 import 'package:katering_ibu_m_flutter/services/ulasan_service.dart';
@@ -378,281 +379,86 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Testimoni Pelanggan',
-                  style: GoogleFonts.plusJakartaSans(
-                    color: primaryColor,
-                    fontSize: 20,
-                    fontWeight: bold,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 20),
             FutureBuilder<List<Ulasan>>(
               future: ulasanService.getUlasan(),
               builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return SizedBox(
-                    height: 200,
-                    child: Center(
-                      child: CircularProgressIndicator(color: primaryColor),
-                    ),
-                  );
-                }
-
-                if (snapshot.hasError) {
-                  return SizedBox(
-                    height: 100,
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.error_outline,
-                            color: Colors.red,
-                            size: 32,
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            'Gagal memuat testimoni',
-                            style: GoogleFonts.plusJakartaSans(
-                              color: Colors.red,
-                              fontWeight: medium,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-
                 final ulasans = snapshot.data ?? [];
-                if (ulasans.isEmpty) {
-                  return SizedBox(
-                    height: 120,
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.chat_bubble_outline,
-                            color: Colors.grey.shade400,
-                            size: 40,
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            'Belum ada testimoni',
-                            style: GoogleFonts.plusJakartaSans(
-                              color: Colors.grey.shade600,
-                              fontWeight: medium,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-
-                List<Ulasan> uniqueUserUlasans = [];
-                Set<String> seenUsers = <String>{};
-
-                for (Ulasan ulasan in ulasans) {
-                  String userIdentifier = ulasan.user.nama.toLowerCase().trim();
-
-                  if (!seenUsers.contains(userIdentifier) &&
-                      uniqueUserUlasans.length < 3) {
-                    uniqueUserUlasans.add(ulasan);
-                    seenUsers.add(userIdentifier);
-                  }
-                }
-
-                final displayedUlasans = uniqueUserUlasans;
 
                 return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    ListView.separated(
-                      shrinkWrap: true,
-                      padding: EdgeInsets.all(0),
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: displayedUlasans.length,
-                      separatorBuilder:
-                          (context, index) => SizedBox(height: 16),
-                      itemBuilder: (context, index) {
-                        final ulasan = displayedUlasans[index];
-                        return Container(
-                          padding: EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: Colors.grey.shade200,
-                              width: 1,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withAlpha(12),
-                                blurRadius: 12,
-                                offset: Offset(0, 4),
-                                spreadRadius: 0,
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    width: 48,
-                                    height: 48,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: primaryColor.withAlpha(51),
-                                        width: 2,
-                                      ),
-                                      image: DecorationImage(
-                                        image:
-                                            ulasan.user.fotoProfil != null
-                                                ? NetworkImage(
-                                                  ulasan.user.fotoProfil!,
-                                                )
-                                                : const AssetImage(
-                                                      'assets/images/default_profile.jpg',
-                                                    )
-                                                    as ImageProvider,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(width: 14),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Text(
-                                              ulasan.user.nama,
-                                              style:
-                                                  GoogleFonts.plusJakartaSans(
-                                                    fontWeight: bold,
-                                                    color: primaryColor,
-                                                    fontSize: 16,
-                                                  ),
-                                            ),
-                                            SizedBox(width: 8),
-                                            Container(
-                                              padding: EdgeInsets.symmetric(
-                                                horizontal: 8,
-                                                vertical: 3,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: Colors.blue.shade50,
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                                border: Border.all(
-                                                  color: Colors.blue.shade200,
-                                                  width: 1,
-                                                ),
-                                              ),
-                                              child: Text(
-                                                'Customer',
-                                                style:
-                                                    GoogleFonts.plusJakartaSans(
-                                                      color:
-                                                          Colors.blue.shade600,
-                                                      fontSize: 10,
-                                                      fontWeight: semibold,
-                                                    ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(height: 4),
-                                        Text(
-                                          ulasan.waktu,
-                                          style: GoogleFonts.plusJakartaSans(
-                                            color: Colors.grey.shade500,
-                                            fontSize: 12,
-                                            fontWeight: medium,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 16),
-
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    padding: EdgeInsets.all(6),
-                                    decoration: BoxDecoration(
-                                      color: primaryColor.withAlpha(25),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Icon(
-                                      Icons.format_quote,
-                                      size: 16,
-                                      color: primaryColor,
-                                    ),
-                                  ),
-                                  SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      ulasan.pesan,
-                                      style: GoogleFonts.plusJakartaSans(
-                                        color: primaryColor,
-                                        fontSize: 14,
-                                        fontWeight: medium,
-                                        height: 1.5,
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                    SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 18),
-                        elevation: 0,
-                        backgroundColor: primaryColor,
-                        shadowColor: Colors.transparent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        splashFactory: InkRipple.splashFactory,
-                      ),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: Text(
-                          'Lihat Semua Testimoni',
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Testimoni Pelanggan (${ulasans.length})',
                           style: GoogleFonts.plusJakartaSans(
-                            color: Colors.white,
-                            fontWeight: semibold,
-                            fontSize: 14,
+                            color: primaryColor,
+                            fontSize: 20,
+                            fontWeight: bold,
                           ),
-                          textAlign: TextAlign.center,
                         ),
-                      ),
+                      ],
                     ),
+                    SizedBox(height: 20),
+
+                    if (snapshot.connectionState == ConnectionState.waiting)
+                      SizedBox(
+                        height: 200,
+                        child: Center(
+                          child: CircularProgressIndicator(color: primaryColor),
+                        ),
+                      )
+                    else if (snapshot.hasError)
+                      SizedBox(
+                        height: 100,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.error_outline,
+                                color: Colors.red,
+                                size: 32,
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                'Gagal memuat testimoni',
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: Colors.red,
+                                  fontWeight: medium,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    else if (ulasans.isEmpty)
+                      SizedBox(
+                        height: 120,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.chat_bubble_outline,
+                                color: Colors.grey.shade400,
+                                size: 40,
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                'Belum ada testimoni',
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: Colors.grey.shade600,
+                                  fontWeight: medium,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    else
+                      _buildTestimoniList(ulasans),
                   ],
                 );
               },
@@ -660,6 +466,212 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTestimoniList(List<Ulasan> ulasans) {
+    List<Ulasan> uniqueUserUlasans = [];
+    Set<String> seenUsers = <String>{};
+
+    for (Ulasan ulasan in ulasans) {
+      String userIdentifier = ulasan.user.nama.toLowerCase().trim();
+
+      if (!seenUsers.contains(userIdentifier) && uniqueUserUlasans.length < 3) {
+        uniqueUserUlasans.add(ulasan);
+        seenUsers.add(userIdentifier);
+      }
+    }
+
+    final displayedUlasans = uniqueUserUlasans;
+
+    return Column(
+      children: [
+        ListView.separated(
+          shrinkWrap: true,
+          padding: EdgeInsets.all(0),
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: displayedUlasans.length,
+          separatorBuilder: (context, index) => SizedBox(height: 16),
+          itemBuilder: (context, index) {
+            final ulasan = displayedUlasans[index];
+            return Container(
+              padding: EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey.shade200, width: 1),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(12),
+                    blurRadius: 12,
+                    offset: Offset(0, 4),
+                    spreadRadius: 0,
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: primaryColor.withAlpha(51),
+                            width: 2,
+                          ),
+                          image: DecorationImage(
+                            image:
+                                ulasan.user.fotoProfil != null
+                                    ? NetworkImage(ulasan.user.fotoProfil!)
+                                    : const AssetImage(
+                                          'assets/images/default_profile.jpg',
+                                        )
+                                        as ImageProvider,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  ulasan.user.nama,
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontWeight: bold,
+                                    color: primaryColor,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                SizedBox(width: 8),
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.shade50,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: Colors.blue.shade200,
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Customer',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color: Colors.blue.shade600,
+                                      fontSize: 10,
+                                      fontWeight: semibold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              ulasan.waktu,
+                              style: GoogleFonts.plusJakartaSans(
+                                color: Colors.grey.shade500,
+                                fontSize: 12,
+                                fontWeight: medium,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 16),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: primaryColor.withAlpha(25),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          Icons.format_quote,
+                          size: 16,
+                          color: primaryColor,
+                        ),
+                      ),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          ulasan.pesan,
+                          style: GoogleFonts.plusJakartaSans(
+                            color: primaryColor,
+                            fontSize: 14,
+                            fontWeight: medium,
+                            height: 1.5,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+        SizedBox(height: 24),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              PageRouteBuilder(
+                transitionDuration: Duration(milliseconds: 300),
+                transitionsBuilder: (
+                  context,
+                  animation,
+                  secondaryAnimation,
+                  child,
+                ) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
+                pageBuilder: (context, animation, secondaryAnimation) {
+                  return AllReviewsScreen();
+                },
+              ),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            padding: EdgeInsets.symmetric(vertical: 18),
+            elevation: 0,
+            backgroundColor: primaryColor,
+            shadowColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            splashFactory: InkRipple.splashFactory,
+          ),
+          child: SizedBox(
+            width: double.infinity,
+            child: Text(
+              'Lihat Semua Testimoni',
+              style: GoogleFonts.plusJakartaSans(
+                color: Colors.white,
+                fontWeight: semibold,
+                fontSize: 14,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
