@@ -4,14 +4,14 @@ import 'package:katering_ibu_m_flutter/constants/index.dart';
 import 'package:katering_ibu_m_flutter/dummy_data.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_app_bar.dart';
 
-class RatingOrderScren extends StatefulWidget {
-  const RatingOrderScren({super.key});
+class RatingOrderScreen extends StatefulWidget {
+  const RatingOrderScreen({super.key});
 
   @override
-  State<RatingOrderScren> createState() => _RatingOrderScrenState();
+  State<RatingOrderScreen> createState() => _RatingOrderScreenState();
 }
 
-class _RatingOrderScrenState extends State<RatingOrderScren> {
+class _RatingOrderScreenState extends State<RatingOrderScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

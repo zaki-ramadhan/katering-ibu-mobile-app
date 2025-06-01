@@ -9,7 +9,7 @@ class CustomNotification {
     required String title,
     required String message,
     Color backgroundColor = Colors.green,
-    Duration duration = const Duration(seconds: 3),
+    Duration duration = const Duration(seconds: 1),
   }) {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
@@ -70,7 +70,7 @@ class CustomNotification {
     required BuildContext context,
     required String title,
     required String message,
-    Duration duration = const Duration(seconds: 3),
+    Duration duration = const Duration(seconds: 1),
   }) {
     show(
       context: context,
@@ -86,7 +86,7 @@ class CustomNotification {
     required BuildContext context,
     required String title,
     required String message,
-    Duration duration = const Duration(seconds: 3),
+    Duration duration = const Duration(seconds: 1),
   }) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -124,7 +124,7 @@ class CustomNotification {
     required BuildContext context,
     required String title,
     required String message,
-    Duration duration = const Duration(seconds: 3),
+    Duration duration = const Duration(seconds: 1),
   }) {
     show(
       context: context,
@@ -140,7 +140,7 @@ class CustomNotification {
     required BuildContext context,
     required String title,
     required String message,
-    Duration duration = const Duration(seconds: 3),
+    Duration duration = const Duration(seconds: 1),
   }) {
     show(
       context: context,
@@ -155,7 +155,7 @@ class CustomNotification {
   static void showCart({
     required BuildContext context,
     required String menuName,
-    Duration duration = const Duration(seconds: 2),
+    Duration duration = const Duration(seconds: 1),
   }) {
     show(
       context: context,
