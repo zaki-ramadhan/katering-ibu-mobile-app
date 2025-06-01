@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:katering_ibu_m_flutter/config/index.dart';
 import 'package:logger/logger.dart';
@@ -87,7 +88,10 @@ class UserService {
     }
   }
 
-  Future<void> updateLoggedInUser(Map<String, dynamic> userData) async {
+  Future<void> updateLoggedInUser(
+    Map<String, dynamic> userData, {
+    File? profileImage,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
 
@@ -95,19 +99,41 @@ class UserService {
       throw Exception('Token not found. User is not logged in.');
     }
 
-    final response = await http.put(
-      Uri.parse('$baseUrl/users/update'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: json.encode(userData),
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception(
-        'Failed to update logged-in user data: ${response.statusCode}',
+    try {
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/users/update'),
       );
+
+      request.headers['Authorization'] = 'Bearer $token';
+      request.headers['Accept'] = 'application/json';
+
+      userData.forEach((key, value) {
+        request.fields[key] = value.toString();
+      });
+
+      if (profileImage != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath('foto_profile', profileImage.path),
+        );
+      }
+
+      final response = await request.send();
+      final responseData = await response.stream.bytesToString();
+
+      if (response.statusCode == 200) {
+        final data = json.decode(responseData);
+        if (data['status'] == 'success') {
+          return;
+        } else {
+          throw Exception(data['message'] ?? 'Failed to update user');
+        }
+      } else {
+        final errorData = json.decode(responseData);
+        throw Exception(errorData['message'] ?? 'Failed to update user');
+      }
+    } catch (e) {
+      throw Exception('Network error: $e');
     }
   }
 }

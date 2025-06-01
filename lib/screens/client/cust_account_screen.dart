@@ -1,9 +1,13 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:katering_ibu_m_flutter/constants/index.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:katering_ibu_m_flutter/services/user_service.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_app_bar.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_bottom_bar.dart';
@@ -38,6 +42,9 @@ class _CustomerAccountState extends State<CustomerAccount> {
   bool _isEditing = false;
   bool _isLoading = false;
   bool _obscurePassword = true;
+
+  File? _selectedImage;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -121,7 +128,7 @@ class _CustomerAccountState extends State<CustomerAccount> {
         'notelp': _phoneController.text.trim(),
         if (_passwordController.text.isNotEmpty)
           'password': _passwordController.text,
-      });
+      }, profileImage: _selectedImage);
 
       Navigator.pop(context);
 
@@ -130,6 +137,7 @@ class _CustomerAccountState extends State<CustomerAccount> {
         email = _emailController.text;
         phone = _phoneController.text;
         _isEditing = false;
+        _selectedImage = null;
       });
 
       CustomNotification.showSuccess(
@@ -225,6 +233,10 @@ class _CustomerAccountState extends State<CustomerAccount> {
                             ],
                           ),
                           SizedBox(height: 12),
+                          if (_selectedImage != null) ...[
+                            _buildImageChangePreview(),
+                            SizedBox(height: 12),
+                          ],
                           _buildChangeItem(
                             'Username',
                             name ?? '',
@@ -242,12 +254,14 @@ class _CustomerAccountState extends State<CustomerAccount> {
                             phone ?? '',
                             _phoneController.text,
                           ),
-                          if (_passwordController.text.isNotEmpty)
+                          if (_passwordController.text.isNotEmpty) ...[
+                            SizedBox(height: 12),
                             _buildChangeItem(
                               'Password',
                               '••••••••',
                               'Password baru',
                             ),
+                          ],
                         ],
                       ),
                     ),
@@ -312,10 +326,7 @@ class _CustomerAccountState extends State<CustomerAccount> {
                           child: Container(
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
-                                colors: [
-                                  primaryColor,
-                                  primaryColor,
-                                ],
+                                colors: [primaryColor, primaryColor],
                               ),
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -490,6 +501,462 @@ class _CustomerAccountState extends State<CustomerAccount> {
     );
   }
 
+  Widget _buildProfileImage() {
+    return Stack(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: primaryColor.withAlpha(76), width: 3),
+          ),
+          child: CircleAvatar(
+            radius: 80,
+            backgroundColor: Colors.grey.shade300,
+            backgroundImage:
+                _selectedImage != null
+                    ? FileImage(_selectedImage!)
+                    : (_profileImagePath != null &&
+                        _profileImagePath!.isNotEmpty)
+                    ? NetworkImage(_profileImagePath!)
+                    : null,
+            child:
+                (_selectedImage == null &&
+                        (_profileImagePath == null ||
+                            _profileImagePath!.isEmpty))
+                    ? ProfilePicture(name: name ?? '', radius: 80, fontsize: 48)
+                    : null,
+          ),
+        ),
+        if (_isEditing)
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: GestureDetector(
+              onTap: _showImageSourceDialog,
+              child: Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [primaryColor, primaryColor],
+                  ),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: white, width: 3),
+                ),
+                child: Icon(Icons.camera_alt_rounded, color: white, size: 20),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  void _showImageSourceDialog() {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withAlpha(128),
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          insetPadding: EdgeInsets.symmetric(horizontal: 32),
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(28),
+            decoration: BoxDecoration(
+              color: white,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [primaryColor.withAlpha(240), primaryColor],
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.photo_camera_rounded,
+                    color: white,
+                    size: 50,
+                  ),
+                ),
+                SizedBox(height: 28),
+                Text(
+                  'Ubah Foto Profile',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade800,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 12),
+                Text(
+                  'Pilih sumber gambar untuk memperbarui\nfoto profile Anda',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 15,
+                    color: Colors.grey.shade600,
+                    height: 1.4,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 32),
+                Container(
+                  padding: EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey.shade200, width: 1),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildImageSourceOption(
+                        icon: Icons.camera_alt_rounded,
+                        title: 'Ambil Foto',
+                        subtitle: 'Gunakan kamera untuk mengambil foto baru',
+                        onTap: () {
+                          Navigator.pop(context);
+                          _pickImageFromCamera();
+                        },
+                        color: Colors.blue,
+                      ),
+                      SizedBox(height: 16),
+                      Container(height: 1, color: Colors.grey.shade300),
+                      SizedBox(height: 16),
+                      _buildImageSourceOption(
+                        icon: Icons.photo_library_rounded,
+                        title: 'Pilih dari Galeri',
+                        subtitle: 'Pilih foto dari galeri Anda',
+                        onTap: () {
+                          Navigator.pop(context);
+                          _pickImageFromGallery();
+                        },
+                        color: Colors.green,
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.grey.shade700,
+                      side: BorderSide(color: Colors.grey.shade300, width: 1.5),
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.close_rounded, size: 18),
+                        SizedBox(width: 8),
+                        Text(
+                          'Batal',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildImageSourceOption({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    required Color color,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200, width: 1),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: color.withAlpha(26),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey.shade800,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 13,
+                      color: Colors.grey.shade600,
+                      height: 1.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: Colors.grey.shade400,
+              size: 16,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImageFromCamera() async {
+    try {
+      final pickedFile = await _picker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: 800,
+        maxHeight: 800,
+        imageQuality: 85,
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          _selectedImage = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      if (e.toString().contains('Permission denied')) {
+        CustomNotification.showError(
+          context: context,
+          title: 'Izin Ditolak',
+          message:
+              'Aplikasi memerlukan izin kamera. Silakan aktifkan di pengaturan.',
+        );
+      } else {
+        CustomNotification.showError(
+          context: context,
+          title: 'Error',
+          message: 'Gagal mengakses kamera: $e',
+        );
+      }
+    }
+  }
+
+  Future<void> _pickImageFromGallery() async {
+    try {
+      final pickedFile = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 800,
+        maxHeight: 800,
+        imageQuality: 85,
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          _selectedImage = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      if (e.toString().contains('Permission denied')) {
+        CustomNotification.showError(
+          context: context,
+          title: 'Izin Ditolak',
+          message:
+              'Aplikasi memerlukan izin untuk mengakses galeri. Silakan aktifkan di pengaturan.',
+        );
+      } else {
+        CustomNotification.showError(
+          context: context,
+          title: 'Error',
+          message: 'Gagal mengakses galeri: $e',
+        );
+      }
+    }
+  }
+
+  Widget _buildImageChangePreview() {
+    return Container(
+      padding: EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.green.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.green.shade200, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade500,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              SizedBox(width: 8),
+              Text(
+                'Foto Profile',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade700,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12),
+          Row(
+            children: [
+              Column(
+                children: [
+                  Text(
+                    'Sebelum',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  SizedBox(height: 6),
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.red.shade300, width: 2),
+                    ),
+                    child: CircleAvatar(
+                      radius: 24,
+                      backgroundColor: Colors.grey.shade300,
+                      backgroundImage:
+                          (_profileImagePath != null &&
+                                  _profileImagePath!.isNotEmpty)
+                              ? NetworkImage(_profileImagePath!)
+                              : null,
+                      child:
+                          (_profileImagePath == null ||
+                                  _profileImagePath!.isEmpty)
+                              ? ProfilePicture(
+                                name: name ?? '',
+                                radius: 24,
+                                fontsize: 16,
+                              )
+                              : null,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(width: 16),
+              Icon(
+                Icons.arrow_forward_rounded,
+                color: Colors.green.shade600,
+                size: 20,
+              ),
+              SizedBox(width: 16),
+              Column(
+                children: [
+                  Text(
+                    'Sesudah',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  SizedBox(height: 6),
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.green.shade400,
+                        width: 2,
+                      ),
+                    ),
+                    child: CircleAvatar(
+                      radius: 24,
+                      backgroundColor: Colors.grey.shade300,
+                      backgroundImage:
+                          _selectedImage != null
+                              ? FileImage(_selectedImage!)
+                              : null,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade100,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        'Foto Baru',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.green.shade700,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Foto profile akan diperbarui',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 11,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -690,18 +1157,6 @@ class _CustomerAccountState extends State<CustomerAccount> {
       ),
       bottomNavigationBar: const CustomBottomBar(currentPage: 'cust_account'),
     );
-  }
-
-  Widget _buildProfileImage() {
-    if (_profileImagePath != null && _profileImagePath!.isNotEmpty) {
-      return CircleAvatar(
-        radius: 80,
-        backgroundColor: Colors.grey.shade300,
-        backgroundImage: NetworkImage(_profileImagePath!),
-      );
-    } else {
-      return ProfilePicture(name: name ?? '', radius: 80, fontsize: 48);
-    }
   }
 
   Widget _buildEditableField({
