@@ -27,6 +27,7 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
   bool _isShowed = false;
   String _selectedPickupMethod = 'pickup';
   String _selectedPaymentMethod = 'cash';
+  String _selectedTransferMethod = 'bri';
   Logger logger = Logger();
 
   final double _deliveryFee = 15000;
@@ -141,12 +142,10 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
                       spacing: 40,
                       children: [
                         _buildCustomerInfo(),
-
+                        _buildOrderItems(),
                         _buildPickupMethod(),
-
                         if (_selectedPickupMethod == 'delivery')
                           _buildDeliveryAddress(),
-
                         _buildPaymentMethod(),
                       ],
                     ),
@@ -631,6 +630,8 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
             ),
           ),
         ),
+
+        if (_selectedPaymentMethod == 'cashless') _buildTransferOptions(),
       ],
     );
   }
@@ -712,6 +713,7 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
                                 fontWeight: medium,
                               ),
                             ),
+                            SizedBox(height: 6),
                             Text(
                               rupiahFormat.format(total),
                               style: GoogleFonts.plusJakartaSans(
@@ -930,6 +932,286 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
         backgroundColor: Colors.green,
         duration: Duration(seconds: 3),
       ),
+    );
+  }
+
+  Widget _buildTransferOptions() {
+    return Container(
+      margin: EdgeInsets.only(top: 8),
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: primaryColor.withAlpha(8),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: primaryColor.withAlpha(50)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 12,
+        children: [
+          Text(
+            'Pilih Metode Transfer:',
+            style: GoogleFonts.plusJakartaSans(
+              fontWeight: semibold,
+              fontSize: 16,
+              color: primaryColor,
+            ),
+          ),
+
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedTransferMethod = 'bri';
+              });
+            },
+            child: Container(
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color:
+                      _selectedTransferMethod == 'bri'
+                          ? primaryColor
+                          : Colors.grey.shade300,
+                  width: _selectedTransferMethod == 'bri' ? 1.5 : 1,
+                ),
+                borderRadius: BorderRadius.circular(16),
+                color:
+                    _selectedTransferMethod == 'bri'
+                        ? primaryColor.withAlpha(20)
+                        : Colors.white,
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.account_balance,
+                    color:
+                        _selectedTransferMethod == 'bri'
+                            ? primaryColor
+                            : Colors.grey.shade600,
+                    size: 22,
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: 4,
+                      children: [
+                        Text(
+                          'Transfer Bank BRI',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontWeight: semibold,
+                            fontSize: 15,
+                            color:
+                                _selectedTransferMethod == 'bri'
+                                    ? primaryColor
+                                    : Colors.black87,
+                          ),
+                        ),
+                        Text(
+                          'No. Rek: 4194 0103 9789 537',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 13,
+                            color: Colors.grey.shade600,
+                            fontWeight: medium,
+                          ),
+                        ),
+                        Text(
+                          'a.n. Fiqry Omar Atala',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 13,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    _selectedTransferMethod == 'bri'
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_off,
+                    color:
+                        _selectedTransferMethod == 'bri'
+                            ? primaryColor
+                            : Colors.grey.shade400,
+                    size: 22,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedTransferMethod = 'dana';
+              });
+            },
+            child: Container(
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color:
+                      _selectedTransferMethod == 'dana'
+                          ? primaryColor
+                          : Colors.grey.shade300,
+                  width: _selectedTransferMethod == 'dana' ? 1.5 : 1,
+                ),
+                borderRadius: BorderRadius.circular(16),
+                color:
+                    _selectedTransferMethod == 'dana'
+                        ? primaryColor.withAlpha(20)
+                        : Colors.white,
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.wallet,
+                    color:
+                        _selectedTransferMethod == 'dana'
+                            ? primaryColor
+                            : Colors.grey.shade600,
+                    size: 22,
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: 4,
+                      children: [
+                        Text(
+                          'DANA E-Wallet',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontWeight: semibold,
+                            fontSize: 15,
+                            color:
+                                _selectedTransferMethod == 'dana'
+                                    ? primaryColor
+                                    : Colors.black87,
+                          ),
+                        ),
+                        Text(
+                          'No. DANA: +62 812-3456-7890',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 13,
+                            color: Colors.grey.shade600,
+                            fontWeight: medium,
+                          ),
+                        ),
+                        Text(
+                          'a.n. Sausan Ronna Ullaya',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 13,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    _selectedTransferMethod == 'dana'
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_off,
+                    color:
+                        _selectedTransferMethod == 'dana'
+                            ? primaryColor
+                            : Colors.grey.shade400,
+                    size: 22,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          Container(
+            margin: EdgeInsets.only(top: 8),
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade50.withAlpha(160),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.blue.shade200),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, color: Colors.blue.shade600, size: 16),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Setelah transfer, mohon kirim bukti pembayaran melalui WhatsApp atau upload di aplikasi.',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 12,
+                      color: Colors.blue.shade700,
+                      fontWeight: medium,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOrderItems() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: 16,
+      children: [
+        Text(
+          'Menu yang dipesan:',
+          style: GoogleFonts.plusJakartaSans(fontWeight: medium, fontSize: 18),
+        ),
+
+        SizedBox(
+          height: 120,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: _checkoutItems.length,
+            separatorBuilder: (context, index) => SizedBox(width: 4),
+            itemBuilder: (context, index) {
+              final item = _checkoutItems[index];
+              return SizedBox(
+                width: 80,
+                child: Column(
+                  spacing: 8,
+                  children: [
+                    Container(
+                      width: 66,
+                      height: 66,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.grey.shade200,
+                        image:
+                            item.menu.foto.isNotEmpty
+                                ? DecorationImage(
+                                  image: NetworkImage(item.menu.foto),
+                                  fit: BoxFit.cover,
+                                )
+                                : null,
+                      ),
+                      child:
+                          item.menu.foto.isEmpty
+                              ? Icon(
+                                Icons.restaurant,
+                                color: Colors.grey.shade400,
+                                size: 30,
+                              )
+                              : null,
+                    ),
+                    Text(
+                      '${item.quantity}x',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 16,
+                        color: primaryColor,
+                        fontWeight: semibold,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
