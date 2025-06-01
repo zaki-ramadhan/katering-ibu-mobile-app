@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:katering_ibu_m_flutter/constants/index.dart';
@@ -5,6 +7,7 @@ import 'package:katering_ibu_m_flutter/screens/client/order_detail_screen.dart';
 import 'package:katering_ibu_m_flutter/services/order_service.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_app_bar.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_bottom_bar.dart';
+import 'package:katering_ibu_m_flutter/widgets/custom_notification.dart';
 import 'package:logger/logger.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:intl/intl.dart';
@@ -60,6 +63,197 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  Future<void> _deleteOrder(int orderId) async {
+    try {
+      await OrderService().deleteOrder(orderId);
+      CustomNotification.showSuccess(
+        context: context,
+        title: 'Berhasil!',
+        message: 'Pesanan berhasil dihapus',
+      );
+      _fetchOrderHistory();
+    } catch (e) {
+      CustomNotification.showError(
+        context: context,
+        title: 'Gagal!',
+        message: 'Gagal menghapus pesanan: $e',
+      );
+    }
+  }
+
+  void _showDeleteConfirmation(dynamic order) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Container(
+            padding: EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(26),
+                  blurRadius: 20,
+                  offset: Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.delete_forever_rounded,
+                    color: Colors.red.shade400,
+                    size: 40,
+                  ),
+                ),
+                SizedBox(height: 24),
+                Text(
+                  'Hapus Pesanan?',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade800,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 12),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: primaryColor.withAlpha(26),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    'Pesanan #${order['id']}',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: primaryColor,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'Apakah Anda yakin ingin menghapus pesanan ini dari riwayat?',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 14,
+                    color: Colors.grey.shade600,
+                    height: 1.4,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 8),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: Colors.red.shade200, width: 1),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.warning_rounded,
+                        size: 16,
+                        color: Colors.red.shade600,
+                      ),
+                      SizedBox(width: 6),
+                      Text(
+                        'Tindakan ini tidak dapat dibatalkan',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12,
+                          color: Colors.red.shade700,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 32),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.grey.shade600,
+                          side: BorderSide(
+                            color: Colors.grey.shade300,
+                            width: 1.5,
+                          ),
+                          padding: EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          'Batal',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _deleteOrder(order['id']);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red.shade500,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.delete_outline_rounded, size: 18),
+                            SizedBox(width: 6),
+                            Text(
+                              'Hapus',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  bool _canDeleteOrder(String status) {
+    return status == 'Completed' || status == 'Rejected';
   }
 
   String _formatTimeAgo(String? dateStr) {
@@ -214,6 +408,8 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         break;
     }
 
+    final canDelete = _canDeleteOrder(order['status']);
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -249,27 +445,53 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                     color: primaryColor.withAlpha(120),
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.fromLTRB(8, 6, 14, 6),
-                  decoration: BoxDecoration(
-                    color: statusColor,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(statusIcon, color: white, size: 16),
-                      const SizedBox(width: 4),
-                      Text(
-                        order['status'],
-                        style: GoogleFonts.plusJakartaSans(
-                          color: white,
-                          fontWeight: medium,
-                          fontSize: 12,
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(8, 6, 14, 6),
+                      decoration: BoxDecoration(
+                        color: statusColor,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(statusIcon, color: white, size: 16),
+                          const SizedBox(width: 4),
+                          Text(
+                            order['status'],
+                            style: GoogleFonts.plusJakartaSans(
+                              color: white,
+                              fontWeight: medium,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (canDelete) ...[
+                      SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () => _showDeleteConfirmation(order),
+                        child: Container(
+                          padding: EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade50,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.red.shade200,
+                              width: 1,
+                            ),
+                          ),
+                          child: Icon(
+                            Icons.delete_outline,
+                            color: Colors.red.shade600,
+                            size: 18,
+                          ),
                         ),
                       ),
                     ],
-                  ),
+                  ],
                 ),
               ],
             ),

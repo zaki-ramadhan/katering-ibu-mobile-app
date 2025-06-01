@@ -101,4 +101,37 @@ class OrderService {
       throw Exception('Network error and no cached data: $e');
     }
   }
+
+  Future<void> deleteOrder(int orderId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    if (token == null) {
+      throw Exception('Token not found. User is not logged in.');
+    }
+
+    final response = await http.delete(
+      Uri.parse('$baseUrl/orders/$orderId'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    logger.i('Delete order response: ${response.statusCode}');
+    logger.i('Delete order body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      final responseData = json.decode(response.body);
+      if (responseData['status'] != 'success') {
+        throw Exception(responseData['message'] ?? 'Failed to delete order');
+      }
+    } else {
+      final errorData = json.decode(response.body);
+      throw Exception(
+        errorData['message'] ??
+            'Failed to delete order: ${response.statusCode}',
+      );
+    }
+  }
 }
