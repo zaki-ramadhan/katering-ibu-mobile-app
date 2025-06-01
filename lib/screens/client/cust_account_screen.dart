@@ -7,7 +7,6 @@ import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:katering_ibu_m_flutter/constants/index.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:katering_ibu_m_flutter/services/user_service.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_app_bar.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_bottom_bar.dart';
@@ -512,7 +511,7 @@ class _CustomerAccountState extends State<CustomerAccount> {
         Container(
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: primaryColor.withAlpha(76), width: 3),
+            border: Border.all(color: primaryColor.withAlpha(76), width: 2),
           ),
           child: CircleAvatar(
             radius: 80,
@@ -547,7 +546,7 @@ class _CustomerAccountState extends State<CustomerAccount> {
                   shape: BoxShape.circle,
                   border: Border.all(color: white, width: 3),
                 ),
-                child: Icon(Icons.camera_alt_rounded, color: white, size: 20),
+                child: Icon(Icons.camera_alt_rounded, color: white, size: 24),
               ),
             ),
           ),

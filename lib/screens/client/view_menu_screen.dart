@@ -1,5 +1,4 @@
 // ignore_for_file: use_build_context_synchronously
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:katering_ibu_m_flutter/constants/index.dart';
@@ -64,29 +63,32 @@ class ViewMenu extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  spacing: 3,
-                                  children: [
-                                    Text(
-                                      menu.namaMenu,
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 20,
-                                        color: primaryColor,
-                                        fontWeight: medium,
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    spacing: 3,
+                                    children: [
+                                      Text(
+                                        menu.namaMenu,
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 20,
+                                          color: primaryColor,
+                                          fontWeight: medium,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    Text(
-                                      menu.formattedHarga,
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 28,
-                                        color: primaryColor,
-                                        fontWeight: semibold,
+                                      Text(
+                                        menu.formattedHarga,
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 28,
+                                          color: primaryColor,
+                                          fontWeight: semibold,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                                 Row(
                                   spacing: 2,
@@ -104,20 +106,21 @@ class ViewMenu extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            Row(
-                              spacing: 10,
-                              children: [
-                                _buildLabel(
-                                  context,
-                                  'Terlaris',
-                                  Colors.amber.shade400,
-                                ),
-                                _buildLabel(
-                                  context,
-                                  'Termurah',
-                                  Colors.green.shade300,
-                                ),
-                              ],
+                            FutureBuilder<List<Menu>>(
+                              future: MenuService().getMenus(),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return _buildDefaultLabels(context);
+                                }
+
+                                if (snapshot.hasError) {
+                                  return _buildDefaultLabels(context);
+                                }
+
+                                final allMenus = snapshot.data ?? [];
+                                return _buildDynamicLabels(context, allMenus);
+                              },
                             ),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -301,24 +304,31 @@ class ViewMenu extends StatelessWidget {
     );
   }
 
-  Widget _buildLabel(BuildContext context, String label, colour) {
+  Widget _buildLabel(
+    BuildContext context,
+    String label,
+    Color colour, [
+    IconData? icon,
+  ]) {
     return Container(
       decoration: BoxDecoration(
-        color: colour.withAlpha(30),
-        border: Border.all(color: colour.withAlpha(255), width: 1),
-        borderRadius: BorderRadius.circular(99),
+        color: colour.withAlpha(20),
+        border: Border.all(color: colour.withAlpha(180), width: 1.2),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+        padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           spacing: 6,
           children: [
-            CircleAvatar(backgroundColor: colour, radius: 3.5),
+            if (icon != null) Icon(icon, size: 16, color: colour),
             Text(
               label,
               style: GoogleFonts.plusJakartaSans(
-                color: primaryColor.withAlpha(200),
-                fontWeight: medium,
+                color: colour,
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
               ),
             ),
           ],
@@ -647,6 +657,86 @@ class ViewMenu extends StatelessWidget {
           },
         );
       },
+    );
+  }
+
+  Widget _buildDynamicLabels(BuildContext context, List<Menu> allMenus) {
+    List<Widget> labels = [];
+
+    final sortedByTerjual = [...allMenus];
+    sortedByTerjual.sort((a, b) => b.terjual.compareTo(a.terjual));
+    final top4Terlaris = sortedByTerjual.take(4).toList();
+
+    final sortedByHarga = [...allMenus];
+    sortedByHarga.sort((a, b) => a.harga.compareTo(b.harga));
+    final top4Termurah = sortedByHarga.take(4).toList();
+
+    bool isTerlaris = top4Terlaris.any((m) => m.id == menu.id);
+    bool isTermurah = top4Termurah.any((m) => m.id == menu.id);
+
+    if (isTerlaris) {
+      labels.add(
+        _buildLabel(
+          context,
+          'Terlaris',
+          Colors.red.shade500,
+          Icons.local_fire_department_rounded,
+        ),
+      );
+    }
+
+    if (isTermurah) {
+      labels.add(
+        _buildLabel(
+          context,
+          'Termurah',
+          Colors.green.shade600,
+          Icons.monetization_on_rounded,
+        ),
+      );
+    }
+
+    if (isTerlaris) {
+      labels.add(
+        _buildLabel(
+          context,
+          'Pilihan Populer',
+          Colors.orange.shade500,
+          Icons.thumb_up_rounded,
+        ),
+      );
+    }
+
+    if (labels.isEmpty) {
+      return _buildDefaultLabels(context);
+    }
+
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Wrap(spacing: 8, runSpacing: 8, children: labels),
+    );
+  }
+
+  Widget _buildDefaultLabels(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Wrap(
+        spacing: 10,
+        children: [
+          _buildLabel(
+            context,
+            'Rekomendasi',
+            Colors.blue.shade600,
+            Icons.recommend_rounded,
+          ),
+          _buildLabel(
+            context,
+            'Berkualitas',
+            Colors.amber.shade600,
+            Icons.verified_rounded,
+          ),
+        ],
+      ),
     );
   }
 }

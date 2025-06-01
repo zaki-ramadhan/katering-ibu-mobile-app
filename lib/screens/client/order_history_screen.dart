@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:katering_ibu_m_flutter/constants/index.dart';
-import 'package:katering_ibu_m_flutter/screens/client/order_detail_screen.dart';
+import 'package:katering_ibu_m_flutter/screens/client/view_order_detail_screen.dart';
 import 'package:katering_ibu_m_flutter/services/order_service.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_app_bar.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_bottom_bar.dart';
@@ -415,7 +415,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => OrderDetailScreen(order: order),
+            builder: (context) => ViewOrderDetailScreen(order: order),
           ),
         ).then((result) {
           if (result == true) {

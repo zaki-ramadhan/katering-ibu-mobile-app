@@ -11,16 +11,16 @@ import 'package:katering_ibu_m_flutter/widgets/custom_app_bar.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_notification.dart';
 import 'package:logger/logger.dart';
 
-class OrderDetailScreen extends StatefulWidget {
+class ViewOrderDetailScreen extends StatefulWidget {
   final dynamic order;
 
-  const OrderDetailScreen({super.key, required this.order});
+  const ViewOrderDetailScreen({super.key, required this.order});
 
   @override
-  State<OrderDetailScreen> createState() => _OrderDetailScreenState();
+  State<ViewOrderDetailScreen> createState() => _ViewOrderDetailScreenState();
 }
 
-class _OrderDetailScreenState extends State<OrderDetailScreen> {
+class _ViewOrderDetailScreenState extends State<ViewOrderDetailScreen> {
   Logger logger = Logger();
   File? _selectedPaymentProof;
   final ImagePicker _picker = ImagePicker();
@@ -531,6 +531,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             : (item['price'] as num? ?? 0);
 
     final itemTotal = quantity * price;
+    final menuFoto = item['menu']['foto'];
 
     return Padding(
       padding: EdgeInsets.only(bottom: 12),
@@ -542,19 +543,47 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             decoration: BoxDecoration(
               color: Colors.grey.shade200,
               borderRadius: BorderRadius.circular(12),
-              image:
-                  item['menu']['foto'] != null &&
-                          item['menu']['foto'].isNotEmpty
-                      ? DecorationImage(
-                        image: NetworkImage(item['menu']['foto']),
-                        fit: BoxFit.cover,
-                      )
-                      : null,
             ),
-            child:
-                item['menu']['foto'] == null || item['menu']['foto'].isEmpty
-                    ? Icon(Icons.restaurant, color: Colors.grey.shade400)
-                    : null,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child:
+                  menuFoto != null && menuFoto.isNotEmpty
+                      ? Image.network(
+                        menuFoto,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey.shade200,
+                            child: Icon(
+                              Icons.restaurant,
+                              color: Colors.grey.shade400,
+                              size: 24,
+                            ),
+                          );
+                        },
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Container(
+                            color: Colors.grey.shade200,
+                            child: Center(
+                              child: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.grey.shade400,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      )
+                      : Icon(
+                        Icons.restaurant,
+                        color: Colors.grey.shade400,
+                        size: 24,
+                      ),
+            ),
           ),
           SizedBox(width: 12),
           Expanded(
