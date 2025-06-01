@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:katering_ibu_m_flutter/constants/index.dart';
 import 'package:katering_ibu_m_flutter/models/menu_model.dart';
 import 'package:katering_ibu_m_flutter/provider/cart_provider.dart';
+import 'package:katering_ibu_m_flutter/services/order_service.dart';
 
 import 'package:katering_ibu_m_flutter/services/user_service.dart';
 import 'package:katering_ibu_m_flutter/models/user_model.dart';
@@ -902,7 +903,7 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
                   CircularProgressIndicator(color: primaryColor),
                   SizedBox(height: 16),
                   Text(
-                    'Memproses ${_checkoutItems.length} item...',
+                    'Membuat pesanan...',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -914,25 +915,70 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
           ),
     );
 
-    await Future.delayed(Duration(seconds: 2));
+    try {
+      final orderService = OrderService();
+      final result = await orderService.createOrder(
+        pickupMethod: _selectedPickupMethod,
+        paymentMethod: _selectedPaymentMethod,
+        deliveryAddress:
+            _selectedPickupMethod == 'delivery' ? _alamatController.text : null,
+        transferMethod:
+            _selectedPaymentMethod == 'cashless'
+                ? _selectedTransferMethod
+                : null,
+      );
 
-    Navigator.pop(context);
+      Navigator.pop(context);
 
-    final cartProvider = Provider.of<CartProvider>(context, listen: false);
-    List<Menu> menusToRemove = _checkoutItems.map((item) => item.menu).toList();
-    await cartProvider.removeMultipleItems(menusToRemove);
+      if (result['success']) {
+        final cartProvider = Provider.of<CartProvider>(context, listen: false);
+        List<Menu> menusToRemove =
+            _checkoutItems.map((item) => item.menu).toList();
+        await cartProvider.removeMultipleItems(menusToRemove);
 
-    Navigator.of(context).popUntil((route) => route.isFirst);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Pesanan ${_checkoutItems.length} item berhasil dibuat!',
-          style: GoogleFonts.plusJakartaSans(color: Colors.white),
+        Navigator.of(context).popUntil((route) => route.isFirst);
+
+        String message = 'Pesanan berhasil dibuat!';
+        if (_selectedPaymentMethod == 'cashless') {
+          message +=
+              '\n\nSilakan transfer ke:\n${result['data']['transfer_info']['account_info']}';
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              message,
+              style: GoogleFonts.plusJakartaSans(color: Colors.white),
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 5),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              result['message'],
+              style: GoogleFonts.plusJakartaSans(color: Colors.white),
+            ),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Terjadi kesalahan: $e',
+            style: GoogleFonts.plusJakartaSans(color: Colors.white),
+          ),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 3),
         ),
-        backgroundColor: Colors.green,
-        duration: Duration(seconds: 3),
-      ),
-    );
+      );
+    }
   }
 
   Widget _buildTransferOptions() {
