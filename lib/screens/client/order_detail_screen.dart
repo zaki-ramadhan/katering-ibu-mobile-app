@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:katering_ibu_m_flutter/constants/index.dart';
+import 'package:katering_ibu_m_flutter/screens/client/rating_order_screen.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_app_bar.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_notification.dart';
 import 'package:logger/logger.dart';
@@ -98,7 +99,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       case 'completed':
         return Colors.green;
       case 'rejected':
-        return Colors.red;
+        return errorColor;
       default:
         return Colors.grey;
     }
@@ -106,7 +107,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
   IconData getStatusIcon(String status) {
     switch (status.toLowerCase()) {
-      case 'pending':
+      case 'Pending':
         return Icons.access_time;
       case 'processed':
         return Icons.autorenew;
@@ -256,12 +257,13 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     final status = order['status'];
     final statusColor = getStatusColor(status);
     final statusIcon = getStatusIcon(status);
+    final isCompleted = status.toLowerCase() == 'completed';
 
     return Container(
       margin: EdgeInsets.all(16),
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -271,40 +273,79 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           ),
         ],
       ),
-      child: Row(
+      child: Column(
         children: [
-          Container(
-            padding: EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: statusColor.withAlpha(26),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(statusIcon, color: statusColor, size: 24),
-          ),
-          SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Status Pesanan',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
-                  ),
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: statusColor.withAlpha(26),
+                  shape: BoxShape.circle,
                 ),
-                SizedBox(height: 4),
-                Text(
-                  status,
+                child: Icon(statusIcon, color: statusColor, size: 24),
+              ),
+              SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Status Pesanan',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      status,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 16,
+                        fontWeight: semibold,
+                        color: statusColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (isCompleted) ...[
+            SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => RatingOrderScreen(order: order),
+                    ),
+                  );
+                },
+                icon: Icon(Icons.star_rate, color: white, size: 18),
+                label: Text(
+                  'Beri Penilaian',
                   style: GoogleFonts.plusJakartaSans(
-                    fontSize: 16,
+                    color: white,
                     fontWeight: semibold,
-                    color: statusColor,
+                    fontSize: 15,
                   ),
                 ),
-              ],
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.amber.shade500,
+                  foregroundColor: white,
+                  elevation: 20,
+                  shadowColor: transparent,
+                  padding: EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -315,7 +356,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -387,7 +428,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -556,7 +597,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -595,7 +636,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -635,7 +676,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.orange.shade200),
         boxShadow: [
@@ -713,14 +754,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               height: 16,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Colors.white,
+                                color: white,
                               ),
                             )
                             : Text(
                               'Kirim',
-                              style: GoogleFonts.plusJakartaSans(
-                                color: Colors.white,
-                              ),
+                              style: GoogleFonts.plusJakartaSans(color: white),
                             ),
                   ),
                 ),
@@ -731,11 +770,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: _pickPaymentProof,
-                icon: Icon(Icons.camera_alt, color: Colors.white),
+                icon: Icon(Icons.camera_alt, color: white),
                 label: Text(
                   'Upload Bukti Pembayaran',
                   style: GoogleFonts.plusJakartaSans(
-                    color: Colors.white,
+                    color: white,
                     fontWeight: semibold,
                   ),
                 ),
@@ -759,7 +798,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.green.shade200),
         boxShadow: [

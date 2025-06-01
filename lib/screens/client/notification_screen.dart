@@ -88,8 +88,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
     } else if (title.contains('ditolak') ||
         title.contains('dibatalkan') ||
         title.contains('gagal')) {
-      bgColor = Colors.red.shade50.withAlpha(120);
-      titleColor = Colors.red.shade700;
+      bgColor = errorColor.shade50.withAlpha(120);
+      titleColor = errorColor.shade700;
     } else if (title.contains('dikerjakan') || title.contains('sedang')) {
       bgColor = Colors.orange.shade50.withAlpha(120);
       titleColor = Colors.orange.shade700;

@@ -97,7 +97,7 @@ class MenuCard extends StatelessWidget {
                       },
                       style: ElevatedButton.styleFrom(
                         elevation: 0,
-                        shadowColor: Colors.transparent,
+                        shadowColor: transparent,
                         backgroundColor: primaryColor,
                         padding: EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
@@ -149,7 +149,7 @@ class MenuCard extends StatelessWidget {
                                   },
                           style: ElevatedButton.styleFrom(
                             elevation: 0,
-                            shadowColor: Colors.transparent,
+                            shadowColor: transparent,
                             foregroundColor: primaryColor,
                             backgroundColor: white,
                             padding: EdgeInsets.fromLTRB(13, 13, 10, 13),

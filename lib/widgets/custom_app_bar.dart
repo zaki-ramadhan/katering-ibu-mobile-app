@@ -25,7 +25,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: white,
       elevation: 0,
       titleSpacing: 1,
       surfaceTintColor: transparent,
@@ -77,8 +77,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               iconSize: 26,
               color: primaryColor.withAlpha(160),
             )
-            :
-            IconButton(
+            : IconButton(
               icon: Icon(Icons.logout_rounded, color: primaryColor),
               onPressed: () async {
                 showDialog(
@@ -135,7 +134,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                                   errorMessage,
                                   style: GoogleFonts.plusJakartaSans(),
                                 ),
-                                backgroundColor: Colors.red,
+                                backgroundColor: errorColor,
                               ),
                             );
                           }

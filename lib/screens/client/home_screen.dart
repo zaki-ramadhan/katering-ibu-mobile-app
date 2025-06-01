@@ -77,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             children: [
               Container(
-                color: Colors.white,
+                color: white,
                 child: Column(
                   children: [
                     Container(
@@ -130,7 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.transparent,
+                color: transparent,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -159,7 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           Text(
                             name ?? '',
                             style: GoogleFonts.plusJakartaSans(
-                              color: Colors.white,
+                              color: white,
                               fontWeight: semibold,
                               fontSize: 16,
                             ),
@@ -167,7 +167,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           SizedBox(width: 8),
                           Icon(
                             Icons.arrow_forward_ios_rounded,
-                            color: Colors.white.withAlpha(180),
+                            color: white.withAlpha(180),
                             size: 14,
                           ),
                         ],
@@ -215,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
               icon: Icon(Icons.notifications),
               iconSize: 28,
-              color: Colors.white,
+              color: white,
             ),
           ),
         ],
@@ -230,7 +230,7 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.all(16),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: white,
           borderRadius: BorderRadius.circular(16),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -323,7 +323,7 @@ class _HomeScreenState extends State<HomeScreen> {
               return Center(
                 child: Text(
                   'Error: ${snapshot.error}',
-                  style: GoogleFonts.plusJakartaSans(color: Colors.red),
+                  style: GoogleFonts.plusJakartaSans(color: errorColor),
                 ),
               );
             }
@@ -386,7 +386,7 @@ class _HomeScreenState extends State<HomeScreen> {
               return Center(
                 child: Text(
                   'Error: ${snapshot.error}',
-                  style: GoogleFonts.plusJakartaSans(color: Colors.red),
+                  style: GoogleFonts.plusJakartaSans(color: errorColor),
                 ),
               );
             }
@@ -463,14 +463,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             children: [
                               Icon(
                                 Icons.error_outline,
-                                color: Colors.red,
+                                color: errorColor,
                                 size: 32,
                               ),
                               SizedBox(height: 8),
                               Text(
                                 'Gagal memuat testimoni',
                                 style: GoogleFonts.plusJakartaSans(
-                                  color: Colors.red,
+                                  color: errorColor,
                                   fontWeight: medium,
                                 ),
                               ),
@@ -567,7 +567,7 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: EdgeInsets.symmetric(vertical: 18),
             elevation: 0,
             backgroundColor: primaryColor,
-            shadowColor: Colors.transparent,
+            shadowColor: transparent,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
@@ -578,7 +578,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Text(
               'Lihat Semua Testimoni',
               style: GoogleFonts.plusJakartaSans(
-                color: Colors.white,
+                color: white,
                 fontWeight: semibold,
                 fontSize: 14,
               ),

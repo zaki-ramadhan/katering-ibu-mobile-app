@@ -151,7 +151,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: white,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -306,9 +306,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             width: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
-                              ),
+                              valueColor: AlwaysStoppedAnimation<Color>(white),
                             ),
                           )
                           : Text(
@@ -316,7 +314,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 16,
                               fontWeight: medium,
-                              color: Colors.white,
+                              color: white,
                             ),
                           ),
                 ),
@@ -398,7 +396,7 @@ class _LoginScreenState extends State<LoginScreen> {
             style: GoogleFonts.plusJakartaSans(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.red,
+              color: errorColor,
             ),
           ),
           TextSpan(
@@ -427,23 +425,23 @@ class _LoginScreenState extends State<LoginScreen> {
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(
-          color: errorText.isNotEmpty ? Colors.red : transparent,
+          color: errorText.isNotEmpty ? errorColor : transparent,
         ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(
-          color: errorText.isNotEmpty ? Colors.red : primaryColor,
+          color: errorText.isNotEmpty ? errorColor : primaryColor,
           width: 2.0,
         ),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.red, width: 2.0),
+        borderSide: const BorderSide(color: errorColor, width: 2.0),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.red, width: 2.0),
+        borderSide: const BorderSide(color: errorColor, width: 2.0),
       ),
     );
   }
@@ -453,7 +451,7 @@ class _LoginScreenState extends State<LoginScreen> {
       padding: const EdgeInsets.only(top: 8.0),
       child: Text(
         error,
-        style: GoogleFonts.plusJakartaSans(color: Colors.red, fontSize: 14),
+        style: GoogleFonts.plusJakartaSans(color: errorColor, fontSize: 14),
       ),
     );
   }

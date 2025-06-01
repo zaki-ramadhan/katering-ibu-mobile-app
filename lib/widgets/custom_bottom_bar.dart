@@ -13,7 +13,7 @@ class CustomBottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BottomAppBar(
-      color: Colors.white,
+      color: white,
       height: 72,
       padding: EdgeInsetsDirectional.zero,
       child: Row(

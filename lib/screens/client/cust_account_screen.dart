@@ -140,7 +140,7 @@ class _CustomerAccountState extends State<CustomerAccount> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: white,
       appBar: CustomAppBar(
         titleAppBar: 'Profil Saya',
         isIconShow: true,
@@ -197,7 +197,7 @@ class _CustomerAccountState extends State<CustomerAccount> {
                     margin: EdgeInsets.only(top: 12),
                     child: Text(
                       emailError!,
-                      style: TextStyle(color: Colors.red, fontSize: 13),
+                      style: TextStyle(color: errorColor, fontSize: 13),
                     ),
                   ),
                 ),
@@ -232,7 +232,7 @@ class _CustomerAccountState extends State<CustomerAccount> {
                     margin: EdgeInsets.only(top: 12),
                     child: Text(
                       passwordError!,
-                      style: TextStyle(color: Colors.red, fontSize: 13),
+                      style: TextStyle(color: errorColor, fontSize: 13),
                     ),
                   ),
                 ),
@@ -260,13 +260,13 @@ class _CustomerAccountState extends State<CustomerAccount> {
                                   height: 18,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    color: Colors.white,
+                                    color: white,
                                   ),
                                 )
                                 : Text(
                                   'Simpan',
                                   style: GoogleFonts.plusJakartaSans(
-                                    color: Colors.white,
+                                    color: white,
                                     fontWeight: semibold,
                                   ),
                                 ),
@@ -323,7 +323,7 @@ class _CustomerAccountState extends State<CustomerAccount> {
                       child: Text(
                         'Edit Profil',
                         style: GoogleFonts.plusJakartaSans(
-                          color: Colors.white,
+                          color: white,
                           fontWeight: semibold,
                         ),
                       ),

@@ -95,7 +95,7 @@ class _CartScreenState extends State<CartScreen> {
         isLogoutIconShow: false,
         isNavigableByBottomBar: true,
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: white,
       body: Consumer<CartProvider>(
         builder: (context, cartProvider, child) {
           if (cartProvider.isLoading) {
@@ -193,12 +193,10 @@ class _CartScreenState extends State<CartScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(color: primaryColor, width: 2),
-                color: isSelected ? primaryColor : Colors.transparent,
+                color: isSelected ? primaryColor : transparent,
               ),
               child:
-                  isSelected
-                      ? Icon(Icons.check, color: Colors.white, size: 16)
-                      : null,
+                  isSelected ? Icon(Icons.check, color: white, size: 16) : null,
             ),
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
@@ -304,7 +302,7 @@ class _CartScreenState extends State<CartScreen> {
                       color: primaryColor,
                       borderRadius: BorderRadius.circular(99),
                     ),
-                    child: Icon(Icons.add, color: Colors.white, size: 20),
+                    child: Icon(Icons.add, color: white, size: 20),
                   ),
                 ),
               ],
@@ -366,7 +364,7 @@ class _CartScreenState extends State<CartScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: white,
         border: Border(top: BorderSide(color: Colors.grey.shade300, width: 1)),
       ),
       child: Column(
@@ -478,7 +476,7 @@ class _CartScreenState extends State<CartScreen> {
                       onPressed: () => _deleteSelectedItems(items),
                       style: ElevatedButton.styleFrom(
                         padding: EdgeInsets.symmetric(vertical: 18),
-                        backgroundColor: Colors.white,
+                        backgroundColor: white,
                         side: BorderSide(color: Colors.blueGrey.shade400),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -516,14 +514,14 @@ class _CartScreenState extends State<CartScreen> {
                                     height: 20,
                                     width: 20,
                                     child: CircularProgressIndicator(
-                                      color: Colors.white,
+                                      color: white,
                                       strokeWidth: 2,
                                     ),
                                   )
                                   : Text(
                                     'Lanjut ke Pembayaran',
                                     style: GoogleFonts.plusJakartaSans(
-                                      color: Colors.white,
+                                      color: white,
                                       fontWeight: semibold,
                                       fontSize: 16,
                                     ),
@@ -553,7 +551,7 @@ class _CartScreenState extends State<CartScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Pilih item yang ingin di-checkout'),
-          backgroundColor: Colors.red,
+          backgroundColor: errorColor,
         ),
       );
       return;

@@ -22,10 +22,10 @@ class CustomNotification {
               Container(
                 padding: EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withAlpha(51),
+                  color: white.withAlpha(51),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, color: Colors.white, size: 20),
+                child: Icon(icon, color: white, size: 20),
               ),
               SizedBox(width: 12),
               Expanded(
@@ -36,7 +36,7 @@ class CustomNotification {
                     Text(
                       title,
                       style: GoogleFonts.plusJakartaSans(
-                        color: Colors.white,
+                        color: white,
                         fontWeight: semibold,
                         fontSize: 14,
                       ),
@@ -45,7 +45,7 @@ class CustomNotification {
                     Text(
                       message,
                       style: GoogleFonts.plusJakartaSans(
-                        color: Colors.white.withAlpha(229),
+                        color: white.withAlpha(229),
                         fontSize: 12,
                         fontWeight: medium,
                       ),
@@ -92,7 +92,7 @@ class CustomNotification {
       SnackBar(
         content: Row(
           children: [
-            Icon(Icons.error, color: Colors.white),
+            Icon(Icons.error, color: white),
             SizedBox(width: 8),
             Expanded(
               child: Column(
@@ -101,18 +101,15 @@ class CustomNotification {
                 children: [
                   Text(
                     title,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold, color: white),
                   ),
-                  Text(message, style: TextStyle(color: Colors.white)),
+                  Text(message, style: TextStyle(color: white)),
                 ],
               ),
             ),
           ],
         ),
-        backgroundColor: Colors.red,
+        backgroundColor: errorColor,
         duration: duration,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

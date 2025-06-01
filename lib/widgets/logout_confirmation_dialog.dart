@@ -15,23 +15,17 @@ class LogoutConfirmationDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: white,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.logout_rounded,
-              size: 48,
-              color: primaryColor,
-            ),
+            Icon(Icons.logout_rounded, size: 48, color: primaryColor),
             const SizedBox(height: 16),
             Text(
               'Konfirmasi Logout',
@@ -92,7 +86,7 @@ class LogoutConfirmationDialog extends StatelessWidget {
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 14,
                         fontWeight: semibold,
-                        color: Colors.white,
+                        color: white,
                       ),
                     ),
                   ),

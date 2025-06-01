@@ -160,7 +160,7 @@ class ViewMenu extends StatelessWidget {
                               child: Text(
                                 'Error: ${snapshot.error}',
                                 style: GoogleFonts.plusJakartaSans(
-                                  color: Colors.red,
+                                  color: errorColor,
                                 ),
                               ),
                             );
@@ -229,7 +229,7 @@ class ViewMenu extends StatelessWidget {
                 margin: EdgeInsets.only(bottom: 16),
                 padding: EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: white,
                   border: Border.all(
                     color: Colors.blueGrey.shade100.withAlpha(150),
                     width: 0.8,
@@ -430,7 +430,7 @@ class ViewMenu extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: transparent,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setState) {
@@ -439,7 +439,7 @@ class ViewMenu extends StatelessWidget {
                 bottom: MediaQuery.of(context).viewInsets.bottom,
               ),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: white,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
               ),
               child: Padding(
@@ -624,7 +624,7 @@ class ViewMenu extends StatelessWidget {
                                         strokeWidth: 2,
                                         valueColor:
                                             AlwaysStoppedAnimation<Color>(
-                                              Colors.white,
+                                              white,
                                             ),
                                       ),
                                     )

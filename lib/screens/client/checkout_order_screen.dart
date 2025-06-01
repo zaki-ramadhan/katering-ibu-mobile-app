@@ -190,7 +190,7 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
                 style: GoogleFonts.plusJakartaSans(
                   fontWeight: medium,
                   fontSize: 14,
-                  color: Colors.red.shade300,
+                  color: errorColor.shade300,
                 ),
               ),
               TextSpan(
@@ -241,7 +241,7 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
               color:
                   _selectedPickupMethod == 'pickup'
                       ? primaryColor.withAlpha(15)
-                      : Colors.transparent,
+                      : transparent,
             ),
             child: Row(
               children: [
@@ -323,7 +323,7 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
               color:
                   _selectedPickupMethod == 'delivery'
                       ? primaryColor.withAlpha(15)
-                      : Colors.transparent,
+                      : transparent,
             ),
             child: Row(
               children: [
@@ -404,10 +404,7 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
               color: _isAlamatFocused ? primaryColor : Colors.grey.shade300,
               width: _isAlamatFocused ? 2 : 1,
             ),
-            color:
-                _isAlamatFocused
-                    ? primaryColor.withAlpha(10)
-                    : Colors.transparent,
+            color: _isAlamatFocused ? primaryColor.withAlpha(10) : transparent,
           ),
           child: TextFormField(
             controller: _alamatController,
@@ -506,7 +503,7 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
               color:
                   _selectedPaymentMethod == 'cash'
                       ? primaryColor.withAlpha(15)
-                      : Colors.transparent,
+                      : transparent,
             ),
             child: Row(
               children: [
@@ -579,7 +576,7 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
               color:
                   _selectedPaymentMethod == 'cashless'
                       ? primaryColor.withAlpha(15)
-                      : Colors.transparent,
+                      : transparent,
             ),
             child: Row(
               children: [
@@ -699,7 +696,7 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
                   },
                   child: Container(
                     padding: EdgeInsets.symmetric(vertical: 8),
-                    color: Colors.transparent,
+                    color: transparent,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -879,7 +876,7 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Mohon lengkapi alamat pengiriman'),
-            backgroundColor: Colors.red,
+            backgroundColor: errorColor,
           ),
         );
         return;
@@ -894,7 +891,7 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
             child: Container(
               padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: white,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Column(
@@ -948,7 +945,7 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
           SnackBar(
             content: Text(
               message,
-              style: GoogleFonts.plusJakartaSans(color: Colors.white),
+              style: GoogleFonts.plusJakartaSans(color: white),
             ),
             backgroundColor: Colors.green,
             duration: Duration(seconds: 5),
@@ -959,9 +956,9 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
           SnackBar(
             content: Text(
               result['message'],
-              style: GoogleFonts.plusJakartaSans(color: Colors.white),
+              style: GoogleFonts.plusJakartaSans(color: white),
             ),
-            backgroundColor: Colors.red,
+            backgroundColor: errorColor,
             duration: Duration(seconds: 3),
           ),
         );
@@ -972,9 +969,9 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
         SnackBar(
           content: Text(
             'Terjadi kesalahan: $e',
-            style: GoogleFonts.plusJakartaSans(color: Colors.white),
+            style: GoogleFonts.plusJakartaSans(color: white),
           ),
-          backgroundColor: Colors.red,
+          backgroundColor: errorColor,
           duration: Duration(seconds: 3),
         ),
       );
@@ -1023,7 +1020,7 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
                 color:
                     _selectedTransferMethod == 'bri'
                         ? primaryColor.withAlpha(20)
-                        : Colors.white,
+                        : white,
               ),
               child: Row(
                 children: [
@@ -1105,7 +1102,7 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
                 color:
                     _selectedTransferMethod == 'dana'
                         ? primaryColor.withAlpha(20)
-                        : Colors.white,
+                        : white,
               ),
               child: Row(
                 children: [

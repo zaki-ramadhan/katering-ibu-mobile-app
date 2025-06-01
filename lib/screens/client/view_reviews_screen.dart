@@ -98,15 +98,11 @@ class _ViewReviewsScreenState extends State<ViewReviewsScreen> {
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor:
-                                  !showMyReviewsOnly
-                                      ? primaryColor
-                                      : Colors.white,
+                                  !showMyReviewsOnly ? primaryColor : white,
                               foregroundColor:
-                                  !showMyReviewsOnly
-                                      ? Colors.white
-                                      : primaryColor,
+                                  !showMyReviewsOnly ? white : primaryColor,
                               elevation: 0,
-                              shadowColor: Colors.transparent,
+                              shadowColor: transparent,
                               padding: EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
@@ -132,15 +128,11 @@ class _ViewReviewsScreenState extends State<ViewReviewsScreen> {
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor:
-                                  showMyReviewsOnly
-                                      ? primaryColor
-                                      : Colors.white,
+                                  showMyReviewsOnly ? primaryColor : white,
                               foregroundColor:
-                                  showMyReviewsOnly
-                                      ? Colors.white
-                                      : primaryColor,
+                                  showMyReviewsOnly ? white : primaryColor,
                               elevation: 0,
-                              shadowColor: Colors.transparent,
+                              shadowColor: transparent,
                               padding: EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
@@ -179,14 +171,14 @@ class _ViewReviewsScreenState extends State<ViewReviewsScreen> {
                           children: [
                             Icon(
                               Icons.error_outline,
-                              color: Colors.red,
+                              color: errorColor,
                               size: 32,
                             ),
                             SizedBox(height: 8),
                             Text(
                               'Gagal memuat testimoni',
                               style: GoogleFonts.plusJakartaSans(
-                                color: Colors.red,
+                                color: errorColor,
                                 fontWeight: medium,
                               ),
                             ),
