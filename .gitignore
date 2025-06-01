@@ -58,3 +58,6 @@ GoogleService-Info.plist
 # Example: ignore backup/temporary files
 *.tmp
 *.bak
+
+# unecessary files
+lib/config

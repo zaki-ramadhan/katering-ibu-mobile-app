@@ -11,7 +11,6 @@ class CustomNotification {
     Color backgroundColor = Colors.green,
     Duration duration = const Duration(seconds: 3),
   }) {
-    // Hide current snackbar jika ada
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
     ScaffoldMessenger.of(context).showSnackBar(

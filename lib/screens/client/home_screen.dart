@@ -188,7 +188,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          // Notification Button
           Container(
             decoration: BoxDecoration(
               color: white.withAlpha(20),

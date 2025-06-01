@@ -13,7 +13,6 @@ class User {
     this.fotoProfil,
   });
 
-  // Getter untuk kompatibilitas
   String get name => nama;
 
   factory User.fromJson(Map<String, dynamic> json) {

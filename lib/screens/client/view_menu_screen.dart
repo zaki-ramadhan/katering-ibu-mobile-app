@@ -448,7 +448,6 @@ class ViewMenu extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Handle indicator
                     Center(
                       child: Container(
                         width: 40,
@@ -461,7 +460,6 @@ class ViewMenu extends StatelessWidget {
                     ),
                     SizedBox(height: 20),
 
-                    // Menu info
                     Row(
                       children: [
                         ClipRRect(
@@ -513,7 +511,6 @@ class ViewMenu extends StatelessWidget {
 
                     SizedBox(height: 24),
 
-                    // Quantity selector
                     Text(
                       'Jumlah Pesanan',
                       style: GoogleFonts.plusJakartaSans(
@@ -583,7 +580,6 @@ class ViewMenu extends StatelessWidget {
 
                     SizedBox(height: 24),
 
-                    // Add to cart button
                     Consumer<CartProvider>(
                       builder: (context, cartProvider, child) {
                         return SizedBox(

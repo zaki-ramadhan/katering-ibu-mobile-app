@@ -283,7 +283,7 @@ class _RegisterState extends State<Register> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      disabledBackgroundColor: primaryColor.withOpacity(0.6),
+                      disabledBackgroundColor: primaryColor..withAlpha(153),
                     ),
                     child:
                         _isLoading

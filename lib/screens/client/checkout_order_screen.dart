@@ -1,7 +1,11 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:katering_ibu_m_flutter/constants/index.dart';
+import 'package:katering_ibu_m_flutter/models/menu_model.dart';
 import 'package:katering_ibu_m_flutter/provider/cart_provider.dart';
+
 import 'package:katering_ibu_m_flutter/services/user_service.dart';
 import 'package:katering_ibu_m_flutter/models/user_model.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_app_bar.dart';
@@ -11,7 +15,9 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CheckoutOrderScreen extends StatefulWidget {
-  const CheckoutOrderScreen({super.key});
+  final List<CartItem>? selectedItems;
+
+  const CheckoutOrderScreen({super.key, this.selectedItems});
 
   @override
   State<CheckoutOrderScreen> createState() => _CheckoutOrderScreenState();
@@ -39,10 +45,14 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _isAlamatFocused = false;
 
+  List<CartItem> _checkoutItems = [];
+  double _checkoutTotal = 0;
+
   @override
   void initState() {
     super.initState();
     _loadUserData();
+    _initializeCheckoutItems();
 
     _alamatFocusNode.addListener(() {
       setState(() {
@@ -94,6 +104,20 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
         _isLoadingUser = false;
       });
     }
+  }
+
+  void _initializeCheckoutItems() {
+    if (widget.selectedItems != null && widget.selectedItems!.isNotEmpty) {
+      _checkoutItems = widget.selectedItems!;
+    } else {
+      final cartProvider = Provider.of<CartProvider>(context, listen: false);
+      _checkoutItems = cartProvider.cartItems;
+    }
+
+    _checkoutTotal = _checkoutItems.fold(
+      0,
+      (sum, item) => sum + item.totalPrice,
+    );
   }
 
   @override
@@ -535,7 +559,6 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
           ),
         ),
 
-        // Option Cashless
         GestureDetector(
           onTap: () {
             setState(() {
@@ -644,193 +667,210 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
   }
 
   Widget _buildBottomBar(BuildContext context) {
-    return Consumer<CartProvider>(
-      builder: (context, cartProvider, child) {
-        final subtotal = cartProvider.totalPrice;
-        final deliveryFee =
-            _selectedPickupMethod == 'delivery' ? _deliveryFee : 0;
-        final total = subtotal + deliveryFee;
+    final subtotal = _checkoutTotal;
+    final deliveryFee = _selectedPickupMethod == 'delivery' ? _deliveryFee : 0;
+    final total = subtotal + deliveryFee;
 
-        return Container(
-          padding: EdgeInsets.fromLTRB(20, 4, 0, 20),
-          decoration: BoxDecoration(
-            color: primaryColor,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(_isShowed ? 44 : 32),
-              topRight: Radius.circular(_isShowed ? 44 : 32),
-            ),
-          ),
-          child: Column(
-            spacing: _isShowed ? 14 : 2,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 6),
-                child: Column(
-                  spacing: 8,
-                  children: [
-                    // Area yang bisa diklik untuk toggle dropdown
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _isShowed = !_isShowed;
-                        });
-                      },
-                      child: Container(
-                        padding: EdgeInsets.symmetric(vertical: 8),
-                        color:
-                            Colors
-                                .transparent, // Area transparan untuk tap area
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Container(
+      padding: EdgeInsets.fromLTRB(20, 4, 0, 20),
+      decoration: BoxDecoration(
+        color: primaryColor,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(_isShowed ? 44 : 32),
+          topRight: Radius.circular(_isShowed ? 44 : 32),
+        ),
+      ),
+      child: Column(
+        spacing: _isShowed ? 14 : 2,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 6),
+            child: Column(
+              spacing: 8,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _isShowed = !_isShowed;
+                    });
+                  },
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    color: Colors.transparent,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Total :',
+                              'Total (${_checkoutItems.length} item):',
                               style: GoogleFonts.plusJakartaSans(
-                                fontSize: 18,
-                                color: white,
+                                fontSize: 16,
+                                color: white.withAlpha(200),
                                 fontWeight: medium,
                               ),
                             ),
-                            Container(
-                              margin: EdgeInsets.only(right: 12),
-                              child: Row(
-                                children: [
-                                  Text(
-                                    rupiahFormat.format(total),
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 18,
-                                      fontWeight: semibold,
-                                      color: white,
-                                    ),
-                                  ),
-                                  SizedBox(width: 8),
-                                  Icon(
-                                    _isShowed
-                                        ? Icons.keyboard_arrow_up
-                                        : Icons.keyboard_arrow_down,
-                                    color: white,
-                                    size: 24,
-                                  ),
-                                ],
+                            Text(
+                              rupiahFormat.format(total),
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 18,
+                                fontWeight: semibold,
+                                color: white,
                               ),
                             ),
                           ],
                         ),
-                      ),
+                        Container(
+                          margin: EdgeInsets.only(right: 12),
+                          child: Icon(
+                            _isShowed
+                                ? Icons.keyboard_arrow_up
+                                : Icons.keyboard_arrow_down,
+                            color: white,
+                            size: 24,
+                          ),
+                        ),
+                      ],
                     ),
-                    if (_isShowed)
-                      Container(
-                        padding: EdgeInsets.only(right: 20),
-                        child: Column(
-                          spacing: 12,
+                  ),
+                ),
+                if (_isShowed)
+                  Container(
+                    padding: EdgeInsets.only(right: 20),
+                    child: Column(
+                      spacing: 12,
+                      children: [
+                        ...(_checkoutItems.map(
+                          (item) => Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  '${item.quantity}x ${item.menu.namaMenu}',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 14,
+                                    color: white.withAlpha(140),
+                                    fontWeight: medium,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              Text(
+                                rupiahFormat.format(item.totalPrice),
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 14,
+                                  fontWeight: medium,
+                                  color: white.withAlpha(140),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )),
+                        Divider(color: white.withAlpha(100), height: 1),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Subtotal :',
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 16,
-                                    color: white.withAlpha(140),
-                                    fontWeight: medium,
-                                  ),
-                                ),
-                                Text(
-                                  rupiahFormat.format(subtotal),
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 16,
-                                    fontWeight: medium,
-                                    color: white.withAlpha(140),
-                                  ),
-                                ),
-                              ],
+                            Text(
+                              'Subtotal :',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 16,
+                                color: white.withAlpha(140),
+                                fontWeight: medium,
+                              ),
                             ),
-                            if (_selectedPickupMethod == 'delivery')
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'Biaya Ongkir :',
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 16,
-                                      color: white.withAlpha(140),
-                                      fontWeight: medium,
-                                    ),
-                                  ),
-                                  Text(
-                                    rupiahFormat.format(deliveryFee),
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 16,
-                                      fontWeight: medium,
-                                      color: white.withAlpha(140),
-                                    ),
-                                  ),
-                                ],
+                            Text(
+                              rupiahFormat.format(subtotal),
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 16,
+                                fontWeight: medium,
+                                color: white.withAlpha(140),
                               ),
-                            if (_selectedPickupMethod == 'pickup')
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'Ongkir :',
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 16,
-                                      color: white.withAlpha(140),
-                                      fontWeight: medium,
-                                    ),
-                                  ),
-                                  Text(
-                                    'Gratis',
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 16,
-                                      fontWeight: semibold,
-                                      color: Colors.green.shade200,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                            ),
                           ],
                         ),
-                      ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: EdgeInsets.only(right: 20),
-                child: ElevatedButton(
-                  onPressed: () {
-                    _processCheckout(context, cartProvider);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: primaryColor,
-                    backgroundColor: white,
-                    elevation: 0,
-                    shadowColor: transparent,
-                    minimumSize: Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                        if (_selectedPickupMethod == 'delivery')
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Biaya Ongkir :',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 16,
+                                  color: white.withAlpha(140),
+                                  fontWeight: medium,
+                                ),
+                              ),
+                              Text(
+                                rupiahFormat.format(deliveryFee),
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 16,
+                                  fontWeight: medium,
+                                  color: white.withAlpha(140),
+                                ),
+                              ),
+                            ],
+                          ),
+                        if (_selectedPickupMethod == 'pickup')
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Ongkir :',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 16,
+                                  color: white.withAlpha(140),
+                                  fontWeight: medium,
+                                ),
+                              ),
+                              Text(
+                                'Gratis',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 16,
+                                  fontWeight: semibold,
+                                  color: Colors.green.shade200,
+                                ),
+                              ),
+                            ],
+                          ),
+                      ],
                     ),
                   ),
-                  child: Text(
-                    'Buat Pesanan',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 16,
-                      fontWeight: semibold,
-                    ),
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-        );
-      },
+          Container(
+            padding: EdgeInsets.only(right: 20),
+            child: ElevatedButton(
+              onPressed: () {
+                _processCheckout(context);
+              },
+              style: ElevatedButton.styleFrom(
+                foregroundColor: primaryColor,
+                backgroundColor: white,
+                elevation: 0,
+                shadowColor: transparent,
+                minimumSize: Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              child: Text(
+                'Buat Pesanan (${_checkoutItems.length} item)',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 16,
+                  fontWeight: semibold,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  void _processCheckout(BuildContext context, CartProvider cartProvider) {
+  void _processCheckout(BuildContext context) async {
     if (_selectedPickupMethod == 'delivery') {
       if (!_formKey.currentState!.validate()) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -843,28 +883,52 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
       }
     }
 
-    logger.i('=== CHECKOUT DATA ===');
-    logger.i('User: ${_currentUser?.nama}');
-    logger.i('Email: ${_currentUser?.email}');
-    logger.i('Phone: ${_currentUser?.phone}');
-    logger.i('Pickup Method: $_selectedPickupMethod');
-    if (_selectedPickupMethod == 'delivery') {
-      logger.i('Delivery Address: ${_alamatController.text.trim()}');
-    }
-    logger.i('Payment Method: $_selectedPaymentMethod');
-    logger.i('Subtotal: ${cartProvider.totalPrice}');
-    logger.i(
-      'Delivery Fee: ${_selectedPickupMethod == 'delivery' ? _deliveryFee : 0}',
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (context) => Center(
+            child: Container(
+              padding: EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(color: primaryColor),
+                  SizedBox(height: 16),
+                  Text(
+                    'Memproses ${_checkoutItems.length} item...',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
     );
-    logger.i(
-      'Total: ${cartProvider.totalPrice + (_selectedPickupMethod == 'delivery' ? _deliveryFee : 0)}',
-    );
-    logger.i('Cart Items: ${cartProvider.cartItems.length}');
 
+    await Future.delayed(Duration(seconds: 2));
+
+    Navigator.pop(context);
+
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+    List<Menu> menusToRemove = _checkoutItems.map((item) => item.menu).toList();
+    await cartProvider.removeMultipleItems(menusToRemove);
+
+    Navigator.of(context).popUntil((route) => route.isFirst);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Pesanan berhasil dibuat!'),
+        content: Text(
+          'Pesanan ${_checkoutItems.length} item berhasil dibuat!',
+          style: GoogleFonts.plusJakartaSans(color: Colors.white),
+        ),
         backgroundColor: Colors.green,
+        duration: Duration(seconds: 3),
       ),
     );
   }

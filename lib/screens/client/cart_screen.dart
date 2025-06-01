@@ -32,7 +32,6 @@ class _CartScreenState extends State<CartScreen> {
   @override
   void initState() {
     super.initState();
-    // Load cart dari local storage
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<CartProvider>(context, listen: false).loadCartFromLocal();
     });
@@ -258,7 +257,6 @@ class _CartScreenState extends State<CartScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                // Tombol kurang
                 if (cartItem.quantity > 1) ...[
                   Container(
                     width: 40,
@@ -282,7 +280,6 @@ class _CartScreenState extends State<CartScreen> {
                 ] else ...[
                   SizedBox(width: 48),
                 ],
-                // Quantity display
                 Container(
                   constraints: BoxConstraints(minWidth: 30),
                   child: Text(
@@ -295,7 +292,6 @@ class _CartScreenState extends State<CartScreen> {
                   ),
                 ),
                 SizedBox(width: 8),
-                // Tombol tambah
                 GestureDetector(
                   onTap: () => _incrementQuantity(cartItem),
                   onLongPressStart: (_) => _startIncrement(cartItem),
@@ -546,12 +542,33 @@ class _CartScreenState extends State<CartScreen> {
   void _proceedToCheckout(BuildContext context) async {
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
 
+    List<CartItem> selectedCartItems = [];
+    for (int i = 0; i < cartProvider.cartItems.length; i++) {
+      if (selectedItems.contains(i)) {
+        selectedCartItems.add(cartProvider.cartItems[i]);
+      }
+    }
+
+    if (selectedCartItems.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Pilih item yang ingin di-checkout'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     final result = await cartProvider.syncCartToBackend();
 
     if (result['success']) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => CheckoutOrderScreen()),
+        MaterialPageRoute(
+          builder:
+              (context) =>
+                  CheckoutOrderScreen(selectedItems: selectedCartItems),
+        ),
       );
     } else {
       CustomNotification.showError(

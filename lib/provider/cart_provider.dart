@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:katering_ibu_m_flutter/models/menu_model.dart';
 import 'package:katering_ibu_m_flutter/services/keranjang_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:logger/logger.dart';
 
 class CartItem {
   final Menu menu;
@@ -29,8 +30,8 @@ class CartProvider extends ChangeNotifier {
   List<CartItem> _cartItems = [];
   bool _isLoading = false;
   bool _isSyncing = false;
+  Logger logger = Logger();
 
-  // Getters
   bool get isLoading => _isLoading;
   bool get isSyncing => _isSyncing;
   List<CartItem> get cartItems => _cartItems;
@@ -41,7 +42,6 @@ class CartProvider extends ChangeNotifier {
   double get totalPrice =>
       _cartItems.fold(0, (total, item) => total + item.totalPrice);
 
-  // Initialize cart dari SharedPreferences
   Future<void> loadCartFromLocal() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -53,11 +53,10 @@ class CartProvider extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      print('Error loading cart from local: $e');
+      logger.e('Error loading cart from local: $e');
     }
   }
 
-  // Save cart ke SharedPreferences
   Future<void> _saveCartToLocal() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -66,26 +65,22 @@ class CartProvider extends ChangeNotifier {
       );
       await prefs.setString('local_cart', cartData);
     } catch (e) {
-      print('Error saving cart to local: $e');
+      logger.e('Error saving cart to local: $e');
     }
   }
 
-  // Add item ke cart lokal
   Future<Map<String, dynamic>> addItem({
     required Menu menu,
     required int quantity,
   }) async {
     try {
-      // Cek apakah item sudah ada di cart
       final existingIndex = _cartItems.indexWhere(
         (item) => item.menu.id == menu.id,
       );
 
       if (existingIndex != -1) {
-        // Update quantity jika item sudah ada
         _cartItems[existingIndex].quantity += quantity;
       } else {
-        // Tambah item baru
         _cartItems.add(CartItem(menu: menu, quantity: quantity));
       }
 
@@ -101,7 +96,6 @@ class CartProvider extends ChangeNotifier {
     }
   }
 
-  // Update quantity item di cart lokal
   Future<Map<String, dynamic>> updateQuantity(
     Menu menu,
     int newQuantity,
@@ -128,7 +122,6 @@ class CartProvider extends ChangeNotifier {
     }
   }
 
-  // Remove item dari cart lokal
   Future<Map<String, dynamic>> removeItem(Menu menu) async {
     try {
       _cartItems.removeWhere((item) => item.menu.id == menu.id);
@@ -141,7 +134,6 @@ class CartProvider extends ChangeNotifier {
     }
   }
 
-  // Remove multiple items
   Future<Map<String, dynamic>> removeMultipleItems(List<Menu> menus) async {
     try {
       for (Menu menu in menus) {
@@ -159,25 +151,21 @@ class CartProvider extends ChangeNotifier {
     }
   }
 
-  // Clear cart lokal
   Future<void> clearCart() async {
     _cartItems.clear();
     await _saveCartToLocal();
     notifyListeners();
   }
 
-  // Check if menu exists in cart
   bool isMenuInCart(int menuId) {
     return _cartItems.any((item) => item.menu.id == menuId);
   }
 
-  // Get quantity of specific menu
   int getMenuQuantity(int menuId) {
     final item = _cartItems.where((item) => item.menu.id == menuId).firstOrNull;
     return item?.quantity ?? 0;
   }
 
-  // Sync cart ke backend saat checkout
   Future<Map<String, dynamic>> syncCartToBackend() async {
     if (_cartItems.isEmpty) {
       return {'success': false, 'message': 'Keranjang kosong'};
@@ -187,10 +175,8 @@ class CartProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Hapus keranjang lama jika ada
       await _keranjangService.clearKeranjang();
 
-      // Tambahkan semua item ke backend
       for (CartItem item in _cartItems) {
         final result = await _keranjangService.addItemToKeranjang(
           menuId: item.menu.id,
@@ -222,7 +208,6 @@ class CartProvider extends ChangeNotifier {
     }
   }
 
-  // Load cart dari backend (untuk sinkronisasi)
   Future<void> loadCartFromBackend() async {
     _isLoading = true;
     notifyListeners();
@@ -245,10 +230,47 @@ class CartProvider extends ChangeNotifier {
         await _saveCartToLocal();
       }
     } catch (e) {
-      print('Error loading cart from backend: $e');
+      logger.e('Error loading cart from backend: $e');
     }
 
     _isLoading = false;
     notifyListeners();
+  }
+
+  Future<Map<String, dynamic>> syncSelectedItemsToBackend(
+    List<CartItem> selectedItems,
+  ) async {
+    _isSyncing = true;
+    notifyListeners();
+
+    try {
+      await _keranjangService.clearKeranjang();
+
+      for (var item in selectedItems) {
+        final result = await _keranjangService.addItemToKeranjang(
+          menuId: item.menu.id,
+          jumlah: item.quantity,
+        );
+
+        if (!result['success']) {
+          _isSyncing = false;
+          notifyListeners();
+          return {
+            'success': false,
+            'message': 'Gagal sync item: ${item.menu.namaMenu}',
+          };
+        }
+      }
+
+      _isSyncing = false;
+      notifyListeners();
+
+      return {'success': true, 'message': 'Items berhasil di-sync'};
+    } catch (e) {
+      _isSyncing = false;
+      notifyListeners();
+
+      return {'success': false, 'message': 'Error: $e'};
+    }
   }
 }

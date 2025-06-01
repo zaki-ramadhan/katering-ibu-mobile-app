@@ -12,7 +12,6 @@ const bold = FontWeight.w700;
 const extrabold = FontWeight.w800;
 const black = FontWeight.w900;
 
-// color star
 const starColor = Color(0xFFFFD250);
 const transparent = Colors.transparent;
 const white = Colors.white;
