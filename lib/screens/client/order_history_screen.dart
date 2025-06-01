@@ -253,7 +253,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   }
 
   bool _canDeleteOrder(String status) {
-    return status == 'Completed' || status == 'Rejected';
+    return status == 'Completed' || status == 'Rejected' || status == 'Pending';
   }
 
   String _formatTimeAgo(String? dateStr) {
