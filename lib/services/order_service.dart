@@ -80,23 +80,27 @@ class OrderService {
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
       );
 
+      logger.i('Order history response status: ${response.statusCode}');
+      logger.i('Order history response body: ${response.body}');
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        logger.i('Order history response: $data');
-        return data['orders'] ?? [];
+        return data['data'] ?? [];
       } else {
         throw Exception(
           'Failed to fetch order history: ${response.statusCode}',
         );
       }
     } catch (e) {
+      logger.e('Fetch order history error: $e');
       final cached = prefs.getString('cached_orders');
       if (cached != null) {
         final data = json.decode(cached);
-        return data['orders'] ?? [];
+        return data['data'] ?? [];
       }
       throw Exception('Network error and no cached data: $e');
     }
