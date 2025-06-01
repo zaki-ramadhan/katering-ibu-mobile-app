@@ -109,17 +109,26 @@ class UserService {
       request.headers['Accept'] = 'application/json';
 
       userData.forEach((key, value) {
-        request.fields[key] = value.toString();
+        if (value != null) {
+          request.fields[key] = value.toString();
+        }
       });
 
+      logger.i('Request fields: ${request.fields}');
+
       if (profileImage != null) {
+        logger.i('Adding profile image: ${profileImage.path}');
         request.files.add(
           await http.MultipartFile.fromPath('foto_profile', profileImage.path),
         );
       }
 
+      logger.i('Sending request to: ${request.url}');
       final response = await request.send();
       final responseData = await response.stream.bytesToString();
+
+      logger.i('Response status: ${response.statusCode}');
+      logger.i('Response body: $responseData');
 
       if (response.statusCode == 200) {
         final data = json.decode(responseData);
@@ -130,9 +139,13 @@ class UserService {
         }
       } else {
         final errorData = json.decode(responseData);
-        throw Exception(errorData['message'] ?? 'Failed to update user');
+        throw Exception(
+          errorData['message'] ??
+              'Failed to update user: ${response.statusCode}',
+        );
       }
     } catch (e) {
+      logger.e('Update user error: $e');
       throw Exception('Network error: $e');
     }
   }

@@ -96,7 +96,6 @@ class _CustomerAccountState extends State<CustomerAccount> {
     if (_emailController.text.isEmpty || !_emailController.text.contains('@')) {
       setState(() {
         emailError = '**Masukkan email yang valid (misal: user@gmail.com)';
-        _isLoading = false;
       });
       Future.delayed(const Duration(seconds: 3), () {
         if (mounted) setState(() => emailError = null);
@@ -105,10 +104,9 @@ class _CustomerAccountState extends State<CustomerAccount> {
     }
 
     if (_passwordController.text.isNotEmpty &&
-        _passwordController.text.length < 8) {
+        _passwordController.text.length < 6) {
       setState(() {
-        passwordError = '**Password minimal 8 karakter';
-        _isLoading = false;
+        passwordError = '**Password minimal 6 karakter';
       });
       Future.delayed(const Duration(seconds: 3), () {
         if (mounted) setState(() => passwordError = null);
@@ -122,22 +120,28 @@ class _CustomerAccountState extends State<CustomerAccount> {
     _showSaveLoadingDialog();
 
     try {
-      await UserService().updateLoggedInUser({
+      Map<String, dynamic> updateData = {
         'name': _nameController.text.trim(),
         'email': _emailController.text.trim(),
         'notelp': _phoneController.text.trim(),
-        if (_passwordController.text.isNotEmpty)
-          'password': _passwordController.text,
-      }, profileImage: _selectedImage);
+      };
+
+      if (_passwordController.text.isNotEmpty) {
+        updateData['password'] = _passwordController.text;
+      }
+
+      await UserService().updateLoggedInUser(
+        updateData,
+        profileImage: _selectedImage,
+      );
 
       Navigator.pop(context);
 
       await _fetchUserData();
       setState(() {
-        email = _emailController.text;
-        phone = _phoneController.text;
         _isEditing = false;
         _selectedImage = null;
+        _passwordController.clear();
       });
 
       CustomNotification.showSuccess(
@@ -147,11 +151,12 @@ class _CustomerAccountState extends State<CustomerAccount> {
       );
     } catch (e) {
       Navigator.pop(context);
+      logger.e('Save profile error: $e');
 
       CustomNotification.showError(
         context: context,
         title: 'Gagal memperbarui!',
-        message: 'Terjadi kesalahan saat memperbarui profil',
+        message: 'Terjadi kesalahan: ${e.toString()}',
       );
     }
   }
