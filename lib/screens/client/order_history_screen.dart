@@ -253,7 +253,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   }
 
   bool _canDeleteOrder(String status) {
-    return status == 'Completed' || status == 'Rejected' || status == 'Pending';
+    return ['Completed', 'Rejected', 'Pending'].contains(status);
   }
 
   String _formatTimeAgo(String? dateStr) {
@@ -508,7 +508,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                   ),
                 ),
                 Text(
-                  _formatTimeAgo(order['delivery_date']),
+                  _formatTimeAgo(order['created_at']),
                   style: GoogleFonts.plusJakartaSans(
                     color: Colors.grey[500],
                     fontSize: 12,
