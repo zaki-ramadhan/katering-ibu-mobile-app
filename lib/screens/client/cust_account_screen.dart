@@ -577,11 +577,7 @@ class _CustomerAccountState extends State<CustomerAccount> {
                   width: 100,
                   height: 100,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [primaryColor.withAlpha(240), primaryColor],
-                    ),
+                    color: primaryColor,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(

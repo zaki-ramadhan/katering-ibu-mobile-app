@@ -6,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:katering_ibu_m_flutter/constants/index.dart';
-import 'package:katering_ibu_m_flutter/screens/client/rating_order_screen.dart';
+import 'package:katering_ibu_m_flutter/screens/client/feedback_order_screen.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_app_bar.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_notification.dart';
 import 'package:logger/logger.dart';
@@ -320,7 +320,7 @@ class _ViewOrderDetailScreenState extends State<ViewOrderDetailScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => RatingOrderScreen(order: order),
+                      builder: (context) => FeedbackOrderScreen(order: order),
                     ),
                   );
                 },

@@ -1163,13 +1163,6 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
             decoration: BoxDecoration(
               color: white,
               borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withAlpha(26),
-                  blurRadius: 20,
-                  offset: Offset(0, 8),
-                ),
-              ],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -1271,13 +1264,6 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
             decoration: BoxDecoration(
               color: white,
               borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withAlpha(38),
-                  blurRadius: 25,
-                  offset: Offset(0, 10),
-                ),
-              ],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -1295,13 +1281,6 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
                       ],
                     ),
                     shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.green.withAlpha(76),
-                        blurRadius: 15,
-                        offset: Offset(0, 8),
-                      ),
-                    ],
                   ),
                   child: Icon(
                     Icons.check_circle_outline,
