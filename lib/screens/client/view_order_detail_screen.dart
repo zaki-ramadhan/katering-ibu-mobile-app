@@ -11,6 +11,7 @@ import 'package:katering_ibu_m_flutter/widgets/custom_app_bar.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_notification.dart';
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:katering_ibu_m_flutter/services/order_service.dart';
 
 class ViewOrderDetailScreen extends StatefulWidget {
   final dynamic order;
@@ -143,48 +144,243 @@ class _ViewOrderDetailScreenState extends State<ViewOrderDetailScreen> {
 
   Future<void> _pickPaymentProof() async {
     try {
-      showModalBottomSheet(
-        context: context,
-        builder: (BuildContext context) {
-          return SafeArea(
-            child: SizedBox(
-              child: Wrap(
-                children: <Widget>[
-                  ListTile(
-                    leading: Icon(Icons.photo_camera),
-                    title: Text('Ambil dari Kamera'),
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      _getImage(ImageSource.camera);
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.photo_library),
-                    title: Text('Pilih dari Galeri'),
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      _getImage(ImageSource.gallery);
-                    },
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      );
+      _showImageSourceDialog();
     } catch (e) {
       CustomNotification.showError(
         context: context,
         title: 'Error',
-        message: 'Gagal mengakses kamera/galeri: $e',
+        message: 'Gagal mengakses galeri: $e',
       );
     }
   }
 
-  Future<void> _getImage(ImageSource source) async {
+  void _showImageSourceDialog() {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withAlpha(128),
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          insetPadding: EdgeInsets.symmetric(horizontal: 32),
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(28),
+            decoration: BoxDecoration(
+              color: white,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: primaryColor,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.receipt_long_rounded,
+                    color: white,
+                    size: 50,
+                  ),
+                ),
+                SizedBox(height: 28),
+                Text(
+                  'Upload Bukti Pembayaran',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade800,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 12),
+                Text(
+                  'Pilih foto bukti pembayaran dari galeri\nuntuk memverifikasi pesanan Anda',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 15,
+                    color: Colors.grey.shade600,
+                    height: 1.4,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 32),
+                Container(
+                  padding: EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey.shade200, width: 1),
+                  ),
+                  child: Column(
+                    children: [
+                      // Info Section
+                      Container(
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.blue.shade200),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.info_outline,
+                              color: Colors.blue.shade600,
+                              size: 20,
+                            ),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Tips Upload Bukti Pembayaran:',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue.shade700,
+                                    ),
+                                  ),
+                                  SizedBox(height: 6),
+                                  Text(
+                                    '• Pastikan foto jelas dan tidak blur\n• Informasi transfer terlihat lengkap\n• Format JPG/PNG dengan ukuran maksimal 5MB',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 12,
+                                      color: Colors.blue.shade600,
+                                      height: 1.3,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 20),
+
+                      // Gallery Option
+                      _buildImageSourceOption(
+                        icon: Icons.photo_library_rounded,
+                        title: 'Pilih dari Galeri',
+                        subtitle:
+                            'Pilih foto bukti pembayaran dari galeri Anda',
+                        onTap: () {
+                          Navigator.pop(context);
+                          _pickImageFromGallery();
+                        },
+                        color: Colors.green,
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.grey.shade700,
+                      side: BorderSide(color: Colors.grey.shade300, width: 1.5),
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.close_rounded, size: 18),
+                        SizedBox(width: 8),
+                        Text(
+                          'Batal',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildImageSourceOption({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    required Color color,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200, width: 1),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: color.withAlpha(26),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey.shade800,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 13,
+                      color: Colors.grey.shade600,
+                      height: 1.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: Colors.grey.shade400,
+              size: 16,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImageFromGallery() async {
     try {
       final XFile? image = await _picker.pickImage(
-        source: source,
+        source: ImageSource.gallery,
         maxWidth: 1024,
         maxHeight: 1024,
         imageQuality: 80,
@@ -196,11 +392,20 @@ class _ViewOrderDetailScreenState extends State<ViewOrderDetailScreen> {
         });
       }
     } catch (e) {
-      CustomNotification.showError(
-        context: context,
-        title: 'Error',
-        message: 'Gagal mengambil gambar: $e',
-      );
+      if (e.toString().contains('Permission denied')) {
+        CustomNotification.showError(
+          context: context,
+          title: 'Izin Ditolak',
+          message:
+              'Aplikasi memerlukan izin untuk mengakses galeri. Silakan aktifkan di pengaturan.',
+        );
+      } else {
+        CustomNotification.showError(
+          context: context,
+          title: 'Error',
+          message: 'Gagal mengakses galeri: $e',
+        );
+      }
     }
   }
 
@@ -219,25 +424,74 @@ class _ViewOrderDetailScreenState extends State<ViewOrderDetailScreen> {
     });
 
     try {
-      await Future.delayed(Duration(seconds: 2));
-
-      CustomNotification.showSuccess(
-        context: context,
-        title: 'Berhasil!',
-        message: 'Bukti pembayaran berhasil dikirim',
+      final orderService = OrderService();
+      final result = await orderService.uploadPaymentProof(
+        orderId: widget.order['id'],
+        paymentProofFile: _selectedPaymentProof!,
       );
 
-      Navigator.pop(context, true);
+      logger.d('Upload result: $result');
+
+      if (result['success']) {
+        // Update order data dengan response dari server
+        if (result['data'] != null) {
+          setState(() {
+            widget.order['payment_proof'] = result['data']['payment_proof_url'];
+            widget.order['status_payment_proof'] =
+                result['data']['status_payment_proof'];
+          });
+        }
+
+        CustomNotification.showSuccess(
+          context: context,
+          title: 'Berhasil!',
+          message: result['message'] ?? 'Bukti pembayaran berhasil dikirim',
+        );
+
+        // Refresh order data untuk memastikan data terbaru
+        await _refreshOrderData();
+      } else {
+        CustomNotification.showError(
+          context: context,
+          title: 'Gagal!',
+          message: result['message'] ?? 'Gagal mengirim bukti pembayaran',
+        );
+      }
     } catch (e) {
+      logger.e('Upload payment proof error: $e');
       CustomNotification.showError(
         context: context,
-        title: 'Gagal!',
-        message: 'Gagal mengirim bukti pembayaran: $e',
+        title: 'Error!',
+        message: 'Terjadi kesalahan: $e',
       );
     } finally {
       setState(() {
         _isUploading = false;
+        _selectedPaymentProof = null;
       });
+    }
+  }
+
+  // Method untuk refresh data order
+  Future<void> _refreshOrderData() async {
+    try {
+      final orderService = OrderService();
+      final result = await orderService.refreshOrderDetail(widget.order['id']);
+
+      if (result['success'] && result['data'] != null) {
+        setState(() {
+          final newData = result['data'];
+          widget.order['payment_proof'] = newData['payment_proof'];
+          widget.order['status_payment_proof'] =
+              newData['status_payment_proof'];
+        });
+        logger.d('Order data refreshed successfully');
+        logger.d('New payment_proof: ${widget.order['payment_proof']}');
+      } else {
+        logger.e('Failed to refresh order data: ${result['message']}');
+      }
+    } catch (e) {
+      logger.e('Refresh order data error: $e');
     }
   }
 
@@ -245,9 +499,13 @@ class _ViewOrderDetailScreenState extends State<ViewOrderDetailScreen> {
   Widget build(BuildContext context) {
     final order = widget.order;
     final bool isPaid = order['status_payment_proof'] == 'Accepted';
-    final bool hasPendingPayment =
-        order['payment_method'] == 'cashless' &&
-        order['status_payment_proof'] == 'Pending';
+    final bool isTransfer = order['payment_method'] == 'cashless';
+    // final bool hasPendingPayment = isTransfer && order['status_payment_proof'] == 'Pending';
+    // final bool hasRejectedPayment = isTransfer && order['status_payment_proof'] == 'Rejected';
+
+    // Debug log
+    logger.d('Order payment_proof: ${order['payment_proof']}');
+    logger.d('Order status_payment_proof: ${order['status_payment_proof']}');
 
     return Scaffold(
       appBar: CustomAppBar(
@@ -264,9 +522,16 @@ class _ViewOrderDetailScreenState extends State<ViewOrderDetailScreen> {
             _buildItemsCard(order),
             _buildDeliveryInfoCard(order),
             _buildPaymentInfoCard(order),
-            if (hasPendingPayment) _buildPaymentProofSection(order),
+
+            // Tampilkan section upload jika:
+            // 1. Payment method = cashless DAN status bukan Accepted
+            // 2. Atau jika ingin upload ulang
+            if (isTransfer && !isPaid) _buildPaymentProofSection(order),
+
+            // Tampilkan info jika payment sudah diterima
             if (isPaid && order['payment_proof'] != null)
-              _buildPaymentProofDisplay(order),
+              _buildAcceptedPaymentInfo(order),
+
             SizedBox(height: 20),
           ],
         ),
@@ -769,13 +1034,21 @@ class _ViewOrderDetailScreenState extends State<ViewOrderDetailScreen> {
   }
 
   Widget _buildPaymentProofSection(dynamic order) {
+    // Cek apakah sudah ada payment_proof yang diupload
+    final hasUploadedProof =
+        order['payment_proof'] != null &&
+        order['payment_proof'].toString().isNotEmpty;
+
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.orange.shade200),
+        border: Border.all(
+          color:
+              hasUploadedProof ? Colors.blue.shade200 : Colors.orange.shade200,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha(13),
@@ -789,15 +1062,24 @@ class _ViewOrderDetailScreenState extends State<ViewOrderDetailScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.warning_amber, color: Colors.orange, size: 24),
+              Icon(
+                hasUploadedProof ? Icons.pending_outlined : Icons.warning_amber,
+                color: hasUploadedProof ? Colors.blue : Colors.orange,
+                size: 24,
+              ),
               SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'Bukti Pembayaran Diperlukan',
+                  hasUploadedProof
+                      ? 'Bukti Pembayaran Menunggu Verifikasi'
+                      : 'Upload Bukti Pembayaran',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 16,
                     fontWeight: bold,
-                    color: Colors.orange.shade700,
+                    color:
+                        hasUploadedProof
+                            ? Colors.blue.shade700
+                            : Colors.orange.shade700,
                   ),
                 ),
               ),
@@ -805,20 +1087,159 @@ class _ViewOrderDetailScreenState extends State<ViewOrderDetailScreen> {
           ),
           SizedBox(height: 12),
           Text(
-            'Pesanan Anda tidak akan diproses sebelum bukti pembayaran dikirim dan diverifikasi.',
+            hasUploadedProof
+                ? 'Bukti pembayaran Anda sedang dalam proses verifikasi oleh admin.'
+                : 'Pesanan Anda tidak akan diproses sebelum bukti pembayaran dikirim dan diverifikasi.',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 14,
               color: Colors.grey.shade600,
             ),
           ),
           SizedBox(height: 16),
-          if (_selectedPaymentProof != null) ...[
+
+          // Tampilkan gambar yang sudah diupload jika ada
+          if (hasUploadedProof) ...[
+            Text(
+              'Bukti Pembayaran yang Diupload:',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 14,
+                fontWeight: semibold,
+                color: Colors.grey.shade700,
+              ),
+            ),
+            SizedBox(height: 12),
             Container(
               width: double.infinity,
               height: 200,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey.shade300),
+                border: Border.all(color: Colors.blue.shade300),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  order['payment_proof'],
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: primaryColor,
+                            ),
+                            SizedBox(height: 12),
+                            Text(
+                              'Memuat gambar...',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.red.shade200),
+                      ),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              color: Colors.red.shade400,
+                              size: 40,
+                            ),
+                            SizedBox(height: 12),
+                            Text(
+                              'Gagal memuat gambar',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 14,
+                                color: Colors.red.shade600,
+                                fontWeight: medium,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              'Gambar mungkin rusak atau tidak tersedia',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 12,
+                                color: Colors.red.shade500,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            SizedBox(height: 16),
+            Container(
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    color: Colors.blue.shade600,
+                    size: 16,
+                  ),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Anda dapat mengupload ulang bukti pembayaran jika diperlukan',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        color: Colors.blue.shade700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 16),
+          ],
+
+          // Section untuk upload (baik upload baru atau upload ulang)
+          if (_selectedPaymentProof != null) ...[
+            Text(
+              hasUploadedProof
+                  ? 'Bukti Pembayaran Baru:'
+                  : 'Preview Bukti Pembayaran:',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 14,
+                fontWeight: semibold,
+                color: Colors.grey.shade700,
+              ),
+            ),
+            SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              height: 200,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.green.shade300),
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
@@ -829,22 +1250,32 @@ class _ViewOrderDetailScreenState extends State<ViewOrderDetailScreen> {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
-                    onPressed: _pickPaymentProof,
-                    child: Text(
-                      'Ganti Foto',
-                      style: GoogleFonts.plusJakartaSans(),
+                  child: OutlinedButton.icon(
+                    onPressed:
+                        () => setState(() => _selectedPaymentProof = null),
+                    icon: Icon(Icons.close, size: 18),
+                    label: Text(
+                      'Batal',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 14,
+                        fontWeight: medium,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.red.shade600,
+                      side: BorderSide(color: Colors.red.shade300),
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   ),
                 ),
                 SizedBox(width: 12),
                 Expanded(
-                  child: ElevatedButton(
+                  child: ElevatedButton.icon(
                     onPressed: _isUploading ? null : _uploadPaymentProof,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryColor,
-                    ),
-                    child:
+                    icon:
                         _isUploading
                             ? SizedBox(
                               width: 16,
@@ -854,10 +1285,26 @@ class _ViewOrderDetailScreenState extends State<ViewOrderDetailScreen> {
                                 color: white,
                               ),
                             )
-                            : Text(
-                              'Kirim',
-                              style: GoogleFonts.plusJakartaSans(color: white),
-                            ),
+                            : Icon(Icons.upload, size: 18),
+                    label: Text(
+                      _isUploading
+                          ? 'Uploading...'
+                          : (hasUploadedProof ? 'Upload Ulang' : 'Upload'),
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 14,
+                        fontWeight: medium,
+                        color: white,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      foregroundColor: white,
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      elevation: 0,
+                    ),
                   ),
                 ),
               ],
@@ -869,18 +1316,24 @@ class _ViewOrderDetailScreenState extends State<ViewOrderDetailScreen> {
                 onPressed: _pickPaymentProof,
                 icon: Icon(Icons.camera_alt, color: white),
                 label: Text(
-                  'Upload Bukti Pembayaran',
+                  hasUploadedProof
+                      ? 'Upload Bukti Baru'
+                      : 'Pilih Bukti Pembayaran',
                   style: GoogleFonts.plusJakartaSans(
-                    color: white,
+                    fontSize: 15,
                     fontWeight: semibold,
+                    color: white,
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
+                  backgroundColor:
+                      hasUploadedProof ? Colors.blue.shade600 : primaryColor,
+                  foregroundColor: white,
                   padding: EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
                   ),
+                  elevation: 0,
                 ),
               ),
             ),
@@ -890,7 +1343,7 @@ class _ViewOrderDetailScreenState extends State<ViewOrderDetailScreen> {
     );
   }
 
-  Widget _buildPaymentProofDisplay(dynamic order) {
+  Widget _buildAcceptedPaymentInfo(dynamic order) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: EdgeInsets.all(20),
@@ -915,7 +1368,7 @@ class _ViewOrderDetailScreenState extends State<ViewOrderDetailScreen> {
               SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'Bukti Pembayaran',
+                  'Pembayaran Diterima',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 16,
                     fontWeight: bold,
@@ -927,33 +1380,74 @@ class _ViewOrderDetailScreenState extends State<ViewOrderDetailScreen> {
           ),
           SizedBox(height: 12),
           Text(
-            'Bukti pembayaran telah diterima dan diverifikasi.',
+            'Bukti pembayaran telah diterima dan diverifikasi. Pesanan Anda sedang diproses.',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 14,
               color: Colors.grey.shade600,
             ),
           ),
           SizedBox(height: 16),
+          Text(
+            'Bukti Pembayaran yang Diverifikasi:',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 14,
+              fontWeight: semibold,
+              color: Colors.grey.shade700,
+            ),
+          ),
+          SizedBox(height: 12),
           Container(
             width: double.infinity,
             height: 200,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.shade300),
+              border: Border.all(color: Colors.green.shade300),
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.network(
                 order['payment_proof'],
                 fit: BoxFit.cover,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: primaryColor,
+                      ),
+                    ),
+                  );
+                },
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
-                    color: Colors.grey.shade200,
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.red.shade200),
+                    ),
                     child: Center(
-                      child: Icon(
-                        Icons.image_not_supported,
-                        color: Colors.grey.shade400,
-                        size: 40,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            color: Colors.red.shade400,
+                            size: 40,
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            'Gagal memuat gambar',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 12,
+                              color: Colors.red.shade600,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   );

@@ -157,7 +157,6 @@ class _NotificationScreenState extends State<NotificationScreen>
       String filter = _orderFilters[filterIndex];
       return notifications.where((notification) {
         final title = notification['title']?.toString().toLowerCase() ?? '';
-        final message = notification['message']?.toString().toLowerCase() ?? '';
 
         switch (filter) {
           case 'Diproses':
@@ -198,7 +197,7 @@ class _NotificationScreenState extends State<NotificationScreen>
     return Scaffold(
       appBar: CustomAppBar(
         titleAppBar: 'Notifikasi',
-        isIconShow: true,
+        isIconShow: false,
         isLogoutIconShow: false,
         isNavigableByBottomBar: true,
       ),

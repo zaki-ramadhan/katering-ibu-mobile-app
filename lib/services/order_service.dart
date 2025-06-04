@@ -1,7 +1,11 @@
+// ignore_for_file: depend_on_referenced_packages
+
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:katering_ibu_m_flutter/config/index.dart';
 import 'package:logger/logger.dart';
+import 'package:path/path.dart' as path;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class OrderService {
@@ -149,6 +153,135 @@ class OrderService {
         throw Exception('Server sedang bermasalah, coba lagi nanti');
       }
       throw Exception(e.toString());
+    }
+  }
+
+  Future<Map<String, dynamic>> uploadPaymentProof({
+    required int orderId,
+    required File paymentProofFile,
+  }) async {
+    try {
+      final token = await _getToken();
+
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/orders/$orderId/upload-payment-proof'),
+      );
+
+      // Headers
+      request.headers.addAll({
+        'Accept': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      });
+
+      // Add file
+      var multipartFile = await http.MultipartFile.fromPath(
+        'payment_proof',
+        paymentProofFile.path,
+        filename: path.basename(paymentProofFile.path),
+      );
+      request.files.add(multipartFile);
+
+      logger.d('Uploading payment proof for order: $orderId');
+      logger.d('File path: ${paymentProofFile.path}');
+      logger.d('File size: ${paymentProofFile.lengthSync()} bytes');
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      logger.d('Upload payment proof response status: ${response.statusCode}');
+      logger.d('Upload payment proof response body: ${response.body}');
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'message': data['message'],
+          'data': data['data'],
+        };
+      } else {
+        logger.e('Upload failed with status: ${response.statusCode}');
+        logger.e('Error response: ${response.body}');
+        return {
+          'success': false,
+          'message': data['message'] ?? 'Gagal mengunggah bukti pembayaran',
+        };
+      }
+    } catch (e) {
+      logger.e('Upload payment proof error: $e');
+      return {'success': false, 'message': 'Terjadi kesalahan koneksi: $e'};
+    }
+  }
+
+  Future<Map<String, dynamic>> getOrderDetail(int orderId) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(
+        Uri.parse('$baseUrl/orders/$orderId/detail'),
+        headers: headers,
+      );
+
+      logger.d('Get order detail response: ${response.body}');
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return {'success': true, 'data': data['data']};
+      } else {
+        return {
+          'success': false,
+          'message': data['message'] ?? 'Gagal memuat detail pesanan',
+        };
+      }
+    } catch (e) {
+      logger.e('Get order detail error: $e');
+      return {'success': false, 'message': 'Terjadi kesalahan koneksi: $e'};
+    }
+  }
+
+  Future<String?> _getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('token');
+  }
+
+  Future<Map<String, String>> _getHeaders() async {
+    final token = await _getToken();
+    return {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+  }
+
+  // Method baru untuk refresh order detail setelah upload
+  Future<Map<String, dynamic>> refreshOrderDetail(int orderId) async {
+    try {
+      final token = await _getToken();
+      final response = await http.get(
+        Uri.parse('$baseUrl/orders/$orderId/detail'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      );
+
+      logger.d('Refresh order detail response: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return {'success': true, 'data': data['data']};
+      } else {
+        final data = jsonDecode(response.body);
+        return {
+          'success': false,
+          'message': data['message'] ?? 'Gagal memuat detail pesanan',
+        };
+      }
+    } catch (e) {
+      logger.e('Refresh order detail error: $e');
+      return {'success': false, 'message': 'Terjadi kesalahan koneksi: $e'};
     }
   }
 }
