@@ -98,7 +98,7 @@ class _ViewOrderDetailScreenState extends State<ViewOrderDetailScreen> {
         return Colors.blue;
       case 'completed':
         return Colors.green;
-      case 'rejected':
+      case 'cancelled':
         return errorColor;
       default:
         return Colors.grey;
@@ -113,7 +113,7 @@ class _ViewOrderDetailScreenState extends State<ViewOrderDetailScreen> {
         return Icons.autorenew;
       case 'completed':
         return Icons.check_circle;
-      case 'rejected':
+      case 'cancelled':
         return Icons.cancel;
       default:
         return Icons.help_outline;

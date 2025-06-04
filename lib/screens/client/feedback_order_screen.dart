@@ -1,9 +1,12 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:katering_ibu_m_flutter/constants/index.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_app_bar.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_notification.dart';
 import 'package:logger/logger.dart';
+import 'package:katering_ibu_m_flutter/services/ulasan_service.dart';
 
 class FeedbackOrderScreen extends StatefulWidget {
   final dynamic order;
@@ -36,27 +39,32 @@ class _FeedbackOrderScreenState extends State<FeedbackOrderScreen> {
     });
 
     try {
-      final feedbackData = {
-        'order_id': widget.order['id'],
-        'feedback': feedbackText,
-      };
+      final ulasanService = UlasanService();
 
-      logger.i('Submitting feedback: $feedbackData');
-
-      await Future.delayed(Duration(seconds: 2));
-
-      CustomNotification.showSuccess(
-        context: context,
-        title: 'Terima Kasih! 🙏',
-        message: 'Feedback Anda sangat berharga untuk kami',
+      final result = await ulasanService.submitUlasan(
+        orderId: widget.order['id'],
+        feedback: feedbackText,
       );
 
-      Navigator.pop(context, true);
+      if (result['success']) {
+        CustomNotification.showSuccess(
+          context: context,
+          title: 'Terima Kasih! 🙏',
+          message: 'Ulasan Anda sangat berharga untuk kami',
+        );
+        Navigator.pop(context, true);
+      } else {
+        CustomNotification.showError(
+          context: context,
+          title: 'Gagal!',
+          message: result['message'],
+        );
+      }
     } catch (e) {
       CustomNotification.showError(
         context: context,
-        title: 'Gagal!',
-        message: 'Gagal mengirim feedback: $e',
+        title: 'Terjadi Kesalahan',
+        message: 'Gagal mengirim ulasan: $e',
       );
     } finally {
       setState(() {

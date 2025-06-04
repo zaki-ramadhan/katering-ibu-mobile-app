@@ -36,7 +36,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     'Diproses': 'Processed',
     'Dikirim': 'Shipped',
     'Selesai': 'Completed',
-    'Dibatalkan': 'Rejected',
+    'Dibatalkan': 'Cancelled',
   };
 
   List<dynamic> _orders = [];
@@ -253,7 +253,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   }
 
   bool _canDeleteOrder(String status) {
-    return ['Completed', 'Rejected', 'Pending'].contains(status);
+    return ['Completed', 'Cancelled', 'Pending'].contains(status);
   }
 
   String _formatTimeAgo(String? dateStr) {
@@ -398,7 +398,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         statusColor = Colors.green;
         statusIcon = Icons.check_circle;
         break;
-      case 'Rejected':
+      case 'Cancelled':
         statusColor = errorColor;
         statusIcon = Icons.cancel;
         break;
