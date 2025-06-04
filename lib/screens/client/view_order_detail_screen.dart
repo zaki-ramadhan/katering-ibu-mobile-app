@@ -6,10 +6,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:katering_ibu_m_flutter/constants/index.dart';
-import 'package:katering_ibu_m_flutter/screens/client/feedback_order_screen.dart';
+import 'package:katering_ibu_m_flutter/screens/client/review_order_screen.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_app_bar.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_notification.dart';
 import 'package:logger/logger.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ViewOrderDetailScreen extends StatefulWidget {
   final dynamic order;
@@ -25,6 +26,26 @@ class _ViewOrderDetailScreenState extends State<ViewOrderDetailScreen> {
   File? _selectedPaymentProof;
   final ImagePicker _picker = ImagePicker();
   bool _isUploading = false;
+  bool _hasReviewed = false; // Tambahkan state ini
+
+  @override
+  void initState() {
+    super.initState();
+    _checkReviewStatus(); // Tambahkan ini
+  }
+
+  // Method untuk cek status review
+  Future<void> _checkReviewStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final reviewKey = 'review_order_${widget.order['id']}';
+    final savedReview = prefs.getString(reviewKey);
+
+    if (mounted) {
+      setState(() {
+        _hasReviewed = savedReview != null;
+      });
+    }
+  }
 
   String formatRupiah(dynamic amount) {
     try {
@@ -316,17 +337,26 @@ class _ViewOrderDetailScreenState extends State<ViewOrderDetailScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
+                onPressed: () async {
+                  final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => FeedbackOrderScreen(order: order),
+                      builder: (context) => ReviewOrderScreen(order: order),
                     ),
                   );
+
+                  // Refresh status review setelah kembali dari halaman Ulasan
+                  if (result == true) {
+                    _checkReviewStatus();
+                  }
                 },
-                icon: Icon(Icons.star_rate, color: white, size: 18),
+                icon: Icon(
+                  _hasReviewed ? Icons.rate_review : Icons.star_rate,
+                  color: white,
+                  size: 18,
+                ),
                 label: Text(
-                  'Beri Penilaian',
+                  _hasReviewed ? 'Lihat Ulasan' : 'Beri Penilaian',
                   style: GoogleFonts.plusJakartaSans(
                     color: white,
                     fontWeight: semibold,
@@ -334,9 +364,14 @@ class _ViewOrderDetailScreenState extends State<ViewOrderDetailScreen> {
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.amber.shade500,
+                  backgroundColor:
+                      _hasReviewed
+                          ? Colors
+                              .green
+                              .shade600 // Hijau jika sudah review
+                          : Colors.amber.shade500, // Kuning jika belum review
                   foregroundColor: white,
-                  elevation: 20,
+                  elevation: 0,
                   shadowColor: transparent,
                   padding: EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                   shape: RoundedRectangleBorder(
@@ -345,6 +380,39 @@ class _ViewOrderDetailScreenState extends State<ViewOrderDetailScreen> {
                 ),
               ),
             ),
+
+            // Tambahkan info text jika sudah review
+            if (_hasReviewed) ...[
+              SizedBox(height: 8),
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.green.shade200),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.check_circle_outline,
+                      color: Colors.green.shade600,
+                      size: 16,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Anda sudah memberikan ulasan untuk pesanan ini',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        color: Colors.green.shade700,
+                        fontWeight: medium,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ],
       ),

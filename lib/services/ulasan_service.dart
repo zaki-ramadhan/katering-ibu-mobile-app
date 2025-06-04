@@ -56,14 +56,14 @@ class UlasanService {
 
   Future<Map<String, dynamic>> submitUlasan({
     required int orderId,
-    required String feedback,
+    required String Ulasan,
   }) async {
     try {
       final headers = await _getHeaders();
       final response = await http.post(
         Uri.parse('$baseUrl/ulasan'),
         headers: headers,
-        body: jsonEncode({'order_id': orderId, 'feedback': feedback}),
+        body: jsonEncode({'order_id': orderId, 'Ulasan': Ulasan}),
       );
 
       final data = jsonDecode(response.body);

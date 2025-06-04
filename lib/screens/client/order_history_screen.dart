@@ -11,6 +11,7 @@ import 'package:katering_ibu_m_flutter/widgets/custom_notification.dart';
 import 'package:logger/logger.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OrderHistoryScreen extends StatefulWidget {
   const OrderHistoryScreen({super.key});
@@ -21,20 +22,21 @@ class OrderHistoryScreen extends StatefulWidget {
 
 class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   int _selectedIndex = 0;
+
   final _labels = [
     'Semua',
-    'Belum dibayar',
+    'Belum Bayar',
+    'Menunggu Verifikasi',
     'Diproses',
-    'Dikirim',
     'Selesai',
     'Dibatalkan',
   ];
 
   final Map<String, String?> _labelToStatus = {
     'Semua': null,
-    'Belum dibayar': 'Pending',
+    'Belum Bayar': 'Pending',
+    'Menunggu Verifikasi': 'Pending',
     'Diproses': 'Processed',
-    'Dikirim': 'Shipped',
     'Selesai': 'Completed',
     'Dibatalkan': 'Cancelled',
   };
@@ -42,6 +44,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   List<dynamic> _orders = [];
   bool _isLoading = true;
   Logger logger = Logger();
+  Map<int, bool> _reviewStatus = {};
 
   @override
   void initState() {
@@ -57,10 +60,31 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         _orders = orders;
         _isLoading = false;
       });
+
+      _checkAllReviewStatus();
     } catch (e) {
       logger.e('Error fetching order history: $e');
       setState(() {
         _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _checkAllReviewStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    Map<int, bool> reviewStatus = {};
+
+    for (var order in _orders) {
+      if (order['status'] == 'Completed') {
+        final reviewKey = 'review_order_${order['id']}';
+        final savedReview = prefs.getString(reviewKey);
+        reviewStatus[order['id']] = savedReview != null;
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _reviewStatus = reviewStatus;
       });
     }
   }
@@ -354,12 +378,34 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     }
 
     String? selectedStatus = _labelToStatus[_labels[_selectedIndex]];
-    List<dynamic> filteredOrders =
-        selectedStatus == null
-            ? _orders
-            : _orders
-                .where((order) => order['status'] == selectedStatus)
-                .toList();
+    List<dynamic> filteredOrders;
+
+    if (selectedStatus == null) {
+      filteredOrders = _orders;
+    } else if (_labels[_selectedIndex] == 'Belum Bayar') {
+      filteredOrders =
+          _orders
+              .where(
+                (order) =>
+                    order['status'] == 'Pending' &&
+                    (order['payment_proof'] == null ||
+                        order['payment_proof'].isEmpty),
+              )
+              .toList();
+    } else if (_labels[_selectedIndex] == 'Menunggu Verifikasi') {
+      filteredOrders =
+          _orders
+              .where(
+                (order) =>
+                    order['status'] == 'Pending' &&
+                    order['payment_proof'] != null &&
+                    order['payment_proof'].isNotEmpty,
+              )
+              .toList();
+    } else {
+      filteredOrders =
+          _orders.where((order) => order['status'] == selectedStatus).toList();
+    }
 
     if (filteredOrders.isEmpty) {
       return Padding(
@@ -390,6 +436,10 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     Color statusColor;
     IconData statusIcon;
     switch (order['status']) {
+      case 'Pending':
+        statusColor = Colors.amber;
+        statusIcon = Icons.schedule;
+        break;
       case 'Processed':
         statusColor = Colors.blue;
         statusIcon = Icons.autorenew;
@@ -409,6 +459,8 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     }
 
     final canDelete = _canDeleteOrder(order['status']);
+    final isCompleted = order['status'] == 'Completed';
+    final hasReviewed = _reviewStatus[order['id']] ?? false;
 
     return GestureDetector(
       onTap: () {
@@ -441,14 +493,17 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                   '#${order['id']}',
                   style: GoogleFonts.plusJakartaSans(
                     fontWeight: bold,
-                    fontSize: 16,
+                    fontSize: 14,
                     color: primaryColor.withAlpha(120),
                   ),
                 ),
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.fromLTRB(8, 6, 14, 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: statusColor,
                         borderRadius: BorderRadius.circular(20),
@@ -456,19 +511,49 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(statusIcon, color: white, size: 16),
+                          Icon(statusIcon, color: white, size: 14),
                           const SizedBox(width: 4),
                           Text(
                             order['status'],
                             style: GoogleFonts.plusJakartaSans(
                               color: white,
                               fontWeight: medium,
-                              fontSize: 12,
+                              fontSize: 11,
                             ),
                           ),
                         ],
                       ),
                     ),
+
+                    if (isCompleted) ...[
+                      SizedBox(width: 8),
+                      Container(
+                        padding: EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color:
+                              hasReviewed
+                                  ? Colors.green.shade50
+                                  : Colors.orange.shade50,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color:
+                                hasReviewed
+                                    ? Colors.green.shade200
+                                    : Colors.orange.shade200,
+                            width: 1,
+                          ),
+                        ),
+                        child: Icon(
+                          hasReviewed ? Icons.rate_review : Icons.star_border,
+                          color:
+                              hasReviewed
+                                  ? Colors.green.shade600
+                                  : Colors.orange.shade600,
+                          size: 16,
+                        ),
+                      ),
+                    ],
+
                     if (canDelete) ...[
                       SizedBox(width: 8),
                       GestureDetector(
