@@ -31,7 +31,6 @@ class _ReviewOrderScreenState extends State<ReviewOrderScreen> {
     _checkIfAlreadyReviewed();
   }
 
-  // Cek apakah sudah pernah review order ini
   Future<void> _checkIfAlreadyReviewed() async {
     final prefs = await SharedPreferences.getInstance();
     final reviewKey = 'review_order_${widget.order['id']}';
@@ -45,7 +44,6 @@ class _ReviewOrderScreenState extends State<ReviewOrderScreen> {
     }
   }
 
-  // Simpan informasi bahwa sudah review
   Future<void> _saveReviewStatus(String ulasan) async {
     final prefs = await SharedPreferences.getInstance();
     final reviewKey = 'review_order_${widget.order['id']}';
@@ -64,7 +62,6 @@ class _ReviewOrderScreenState extends State<ReviewOrderScreen> {
       return;
     }
 
-    // Cek lagi apakah sudah pernah review (double check)
     if (_hasReviewed) {
       CustomNotification.showError(
         context: context,
@@ -86,7 +83,6 @@ class _ReviewOrderScreenState extends State<ReviewOrderScreen> {
       );
 
       if (result['success']) {
-        // Simpan status review ke local storage
         await _saveReviewStatus(ulasanText);
 
         CustomNotification.showSuccess(
@@ -120,12 +116,10 @@ class _ReviewOrderScreenState extends State<ReviewOrderScreen> {
     final order = widget.order;
     final items = order['items'] as List;
 
-    // Jika sudah pernah review, tampilkan halaman "sudah direview"
     if (_hasReviewed) {
       return _buildAlreadyReviewedScreen(order, items);
     }
 
-    // Halaman normal untuk memberikan ulasan
     return _buildReviewScreen(order, items);
   }
 
@@ -143,7 +137,6 @@ class _ReviewOrderScreenState extends State<ReviewOrderScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Status Banner
               Container(
                 width: double.infinity,
                 padding: EdgeInsets.all(16),
@@ -187,12 +180,10 @@ class _ReviewOrderScreenState extends State<ReviewOrderScreen> {
                 ),
               ),
 
-              // Order Info Card
               _buildOrderInfoCard(order, items),
 
               SizedBox(height: 24),
 
-              // Review yang sudah dikirim
               Container(
                 width: double.infinity,
                 padding: EdgeInsets.all(20),
@@ -312,12 +303,10 @@ class _ReviewOrderScreenState extends State<ReviewOrderScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Order Info Card
               _buildOrderInfoCard(order, items),
 
               SizedBox(height: 24),
 
-              // Ulasan Section
               Container(
                 width: double.infinity,
                 padding: EdgeInsets.all(20),

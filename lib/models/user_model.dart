@@ -20,7 +20,7 @@ class User {
       id: json['id'] ?? 0,
       nama: json['nama'] ?? json['name'] ?? 'User',
       email: json['email'],
-      phone: json['phone'] ?? json['no_telepon'] ?? json['no_hp'],
+      phone: json['phone'] ?? json['notelp'] ?? json['no_hp'],
       fotoProfil: json['foto_profil'],
     );
   }

@@ -30,7 +30,6 @@ class _NotificationScreenState extends State<NotificationScreen>
   int _selectedFilterIndex = 0;
   StreamSubscription<List<dynamic>>? _notificationSubscription;
 
-  // Filter labels untuk notifikasi pesanan
   final List<String> _orderFilters = [
     'Semua',
     'Diproses',
@@ -38,7 +37,6 @@ class _NotificationScreenState extends State<NotificationScreen>
     'Dibatalkan',
   ];
 
-  // Filter labels untuk notifikasi pembayaran
   final List<String> _paymentFilters = [
     'Semua',
     'Diterima',
@@ -52,20 +50,17 @@ class _NotificationScreenState extends State<NotificationScreen>
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
       setState(() {
-        _selectedFilterIndex = 0; // Reset filter saat ganti tab
+        _selectedFilterIndex = 0;
       });
     });
     timeago.setLocaleMessages('id', timeago.IdMessages());
-    // Request permissions and start polling
     _initializeNotifications();
     _fetchNotifications();
   }
 
   Future<void> _initializeNotifications() async {
-    // Request notification permissions
     await LocalNotificationService.requestPermissions();
 
-    // Start polling service
     final pollingService = NotificationPollingService();
 
     _notificationSubscription = pollingService.notificationStream.listen((
@@ -135,7 +130,7 @@ class _NotificationScreenState extends State<NotificationScreen>
     List<dynamic> notifications,
     bool isOrderTab,
   ) {
-    if (_selectedFilterIndex == 0) return notifications; // Semua
+    if (_selectedFilterIndex == 0) return notifications; 
 
     if (isOrderTab) {
       String filter = _orderFilters[_selectedFilterIndex];
@@ -179,7 +174,7 @@ class _NotificationScreenState extends State<NotificationScreen>
     bool isOrderTab,
     int filterIndex,
   ) {
-    if (filterIndex == 0) return notifications.length; // Semua
+    if (filterIndex == 0) return notifications.length;
 
     if (isOrderTab) {
       String filter = _orderFilters[filterIndex];
@@ -232,7 +227,6 @@ class _NotificationScreenState extends State<NotificationScreen>
       backgroundColor: white,
       body: Column(
         children: [
-          // Tab Bar dengan badge count
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
@@ -332,10 +326,8 @@ class _NotificationScreenState extends State<NotificationScreen>
             ),
           ),
 
-          // Filter Labels dengan count
           _buildFilterLabels(),
 
-          // Tab Bar View
           Expanded(
             child: RefreshIndicator(
               onRefresh: _refreshNotifications,
@@ -445,7 +437,6 @@ class _NotificationScreenState extends State<NotificationScreen>
       return const Center(child: CircularProgressIndicator());
     }
 
-    // Header dengan informasi jumlah data
     Widget header = Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Row(
@@ -546,7 +537,6 @@ class _NotificationScreenState extends State<NotificationScreen>
     final createdAt = notification['created_at'] ?? '';
     final orderId = notification['order_id']?.toString() ?? 'Tidak tersedia';
 
-    // Pengkondisian berdasarkan title dan message
     if (title.contains('pesanan sedang dikerjakan')) {
       bgColor = Colors.blue.shade50.withAlpha(120);
       titleColor = Colors.blue.shade700;

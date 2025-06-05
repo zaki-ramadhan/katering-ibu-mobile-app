@@ -500,8 +500,6 @@ class _ViewOrderDetailScreenState extends State<ViewOrderDetailScreen> {
     final order = widget.order;
     final bool isPaid = order['status_payment_proof'] == 'Accepted';
     final bool isTransfer = order['payment_method'] == 'cashless';
-    // final bool hasPendingPayment = isTransfer && order['status_payment_proof'] == 'Pending';
-    // final bool hasRejectedPayment = isTransfer && order['status_payment_proof'] == 'Rejected';
 
     // Debug log
     logger.d('Order payment_proof: ${order['payment_proof']}');
@@ -523,14 +521,14 @@ class _ViewOrderDetailScreenState extends State<ViewOrderDetailScreen> {
             _buildDeliveryInfoCard(order),
             _buildPaymentInfoCard(order),
 
-            // Tampilkan section upload jika:
-            // 1. Payment method = cashless DAN status bukan Accepted
-            // 2. Atau jika ingin upload ulang
-            if (isTransfer && !isPaid) _buildPaymentProofSection(order),
+            if (isTransfer && order['status_payment_proof'] != 'Accepted')
+              _buildPaymentProofSection(order),
 
-            // Tampilkan info jika payment sudah diterima
-            if (isPaid && order['payment_proof'] != null)
+            if (isPaid && isTransfer && order['payment_proof'] != null)
               _buildAcceptedPaymentInfo(order),
+
+            if (isPaid && order['payment_method'] == 'cash')
+              _buildCashPaymentInfo(order),
 
             SizedBox(height: 20),
           ],
@@ -1396,63 +1394,111 @@ class _ViewOrderDetailScreenState extends State<ViewOrderDetailScreen> {
             ),
           ),
           SizedBox(height: 12),
-          Container(
-            width: double.infinity,
-            height: 200,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.green.shade300),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                order['payment_proof'],
-                fit: BoxFit.cover,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: primaryColor,
-                      ),
-                    ),
-                  );
-                },
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: Colors.red.shade50,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.red.shade200),
-                    ),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.error_outline,
-                            color: Colors.red.shade400,
-                            size: 40,
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            'Gagal memuat gambar',
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 12,
-                              color: Colors.red.shade600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+            Container(
+              width: double.infinity,
+              height: 200,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.green.shade300),
               ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  order['payment_proof'],
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: primaryColor,
+                        ),
+                      ),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.red.shade200),
+                      ),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              color: Colors.red.shade400,
+                              size: 40,
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'Gagal memuat gambar',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 12,
+                                color: Colors.red.shade600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCashPaymentInfo(dynamic order) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.green.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(13),
+            blurRadius: 10,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.green, size: 24),
+              SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Pembayaran Diterima (Cash)',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 16,
+                    fontWeight: bold,
+                    color: Colors.green.shade700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12),
+          Text(
+            'Terima kasih, pembayaran Anda telah diterima. Pesanan Anda sedang diproses.',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 14,
+              color: Colors.grey.shade600,
             ),
           ),
         ],

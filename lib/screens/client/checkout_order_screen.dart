@@ -32,7 +32,7 @@ class _CheckoutOrderScreenState extends State<CheckoutOrderScreen> {
   String _selectedTransferMethod = 'bri';
   Logger logger = Logger();
 
-  final double _deliveryFee = 15000;
+  final double _deliveryFee = 10000;
   final NumberFormat rupiahFormat = NumberFormat.currency(
     locale: 'id_ID',
     symbol: 'Rp',

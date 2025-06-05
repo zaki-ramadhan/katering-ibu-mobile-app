@@ -129,13 +129,13 @@ class LocalNotificationService {
         actionButtons: [
           NotificationActionButton(
             key: 'OPEN_APP',
-            label: '🍽️ Buka Aplikasi',
+            label: '🍽️ BUKA APLIKASI',
             actionType: ActionType.Default,
             autoDismissible: true,
           ),
           NotificationActionButton(
             key: 'DISMISS',
-            label: '❌ Tutup',
+            label: '❌ TUTUP',
             actionType: ActionType.DismissAction,
             autoDismissible: true,
           ),

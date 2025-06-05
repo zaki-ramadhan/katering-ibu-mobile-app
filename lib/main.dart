@@ -15,7 +15,6 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  // Initialize notifications
   await LocalNotificationService.initialize();
   await LocalNotificationService.requestPermissions();
 
@@ -50,7 +49,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
     switch (state) {
       case AppLifecycleState.resumed:
-        // App kembali ke foreground - restart polling
         Future.delayed(Duration(milliseconds: 500), () {
           if (mounted) {
             pollingService.startPolling();
@@ -59,7 +57,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         break;
       case AppLifecycleState.paused:
       case AppLifecycleState.inactive:
-        // App di background - stop polling
         pollingService.stopPolling();
         break;
       case AppLifecycleState.detached:

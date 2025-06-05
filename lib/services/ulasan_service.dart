@@ -60,11 +60,23 @@ class UlasanService {
   }) async {
     try {
       final headers = await _getHeaders();
+
+      // ✅ PERBAIKAN: Gunakan parameter 'ulasan' bukan 'Ulasan'
+      final requestBody = {
+        'order_id': orderId,
+        'feedback': ulasan, // ✅ Ubah dari 'ulasan' ke 'feedback'
+      };
+
+      logger.d('Submitting ulasan with data: $requestBody');
+
       final response = await http.post(
         Uri.parse('$baseUrl/ulasan'),
         headers: headers,
-        body: jsonEncode({'order_id': orderId, 'Ulasan': Ulasan}),
+        body: jsonEncode(requestBody), // ✅ Encode object yang benar
       );
+
+      logger.d('Response status: ${response.statusCode}');
+      logger.d('Response body: ${response.body}');
 
       final data = jsonDecode(response.body);
 
