@@ -27,6 +27,7 @@ dependencies:
   connectivity_plus: ^6.1.4
   flutter_svg: ^2.1.0
   permission_handler: ^12.0.0+1
+  awesome_notifications: ^0.10.1
 
 
 dev_dependencies:
@@ -48,6 +49,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/pan_loading_asset.json
+    - assets/images/logo.png
     - assets/images/ # logo untuk ditampilkan di dalam aplikasi
 
 # splash screen 

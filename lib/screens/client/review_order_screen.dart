@@ -46,16 +46,16 @@ class _ReviewOrderScreenState extends State<ReviewOrderScreen> {
   }
 
   // Simpan informasi bahwa sudah review
-  Future<void> _saveReviewStatus(String Ulasan) async {
+  Future<void> _saveReviewStatus(String ulasan) async {
     final prefs = await SharedPreferences.getInstance();
     final reviewKey = 'review_order_${widget.order['id']}';
-    await prefs.setString(reviewKey, Ulasan);
+    await prefs.setString(reviewKey, ulasan);
   }
 
   Future<void> _submitUlasan() async {
-    final UlasanText = _reviewController.text.trim();
+    final ulasanText = _reviewController.text.trim();
 
-    if (UlasanText.isEmpty) {
+    if (ulasanText.isEmpty) {
       CustomNotification.showError(
         context: context,
         title: 'Ulasan Diperlukan',
@@ -82,12 +82,12 @@ class _ReviewOrderScreenState extends State<ReviewOrderScreen> {
       final ulasanService = UlasanService();
       final result = await ulasanService.submitUlasan(
         orderId: widget.order['id'],
-        Ulasan: UlasanText,
+        ulasan: ulasanText,
       );
 
       if (result['success']) {
         // Simpan status review ke local storage
-        await _saveReviewStatus(UlasanText);
+        await _saveReviewStatus(ulasanText);
 
         CustomNotification.showSuccess(
           context: context,

@@ -2,41 +2,41 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:katering_ibu_m_flutter/config/index.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:logger/logger.dart';
 
 class NotificationService {
+  final Logger _logger = Logger();
+
   Future<List<dynamic>> fetchNotifications() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
-
-    if (token == null) {
-      throw Exception('Token not found. User is not logged in.');
-    }
-
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        _logger.w('No auth token found');
+        return [];
+      }
+
       final response = await http.get(
         Uri.parse('$baseUrl/notifications'),
         headers: {
-          'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
         },
       );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        prefs.setString('cached_notifications', response.body);
-        return data['notifications'] ?? [];
-      } else {
-        throw Exception(
-          'Failed to fetch notifications: ${response.statusCode}',
-        );
+        if (data['success'] == true) {
+          return data['data'] ?? [];
+        }
       }
+
+      return [];
     } catch (e) {
-      final cached = prefs.getString('cached_notifications');
-      if (cached != null) {
-        final data = json.decode(cached);
-        return data['notifications'] ?? [];
-      }
-      rethrow;
+      _logger.e('Error fetching notifications: $e');
+      return [];
     }
   }
 

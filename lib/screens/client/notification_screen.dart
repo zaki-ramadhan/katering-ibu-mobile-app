@@ -4,11 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:katering_ibu_m_flutter/constants/index.dart';
 import 'package:katering_ibu_m_flutter/services/notification_service.dart';
+import 'package:katering_ibu_m_flutter/services/notification_polling_service.dart';
+import 'package:katering_ibu_m_flutter/services/local_notification_service.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_app_bar.dart';
 import 'package:katering_ibu_m_flutter/widgets/custom_bottom_bar.dart';
 import 'package:logger/logger.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:katering_ibu_m_flutter/widgets/custom_notification.dart';
+import 'dart:async';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -25,6 +28,7 @@ class _NotificationScreenState extends State<NotificationScreen>
 
   late TabController _tabController;
   int _selectedFilterIndex = 0;
+  StreamSubscription<List<dynamic>>? _notificationSubscription;
 
   // Filter labels untuk notifikasi pesanan
   final List<String> _orderFilters = [
@@ -52,12 +56,36 @@ class _NotificationScreenState extends State<NotificationScreen>
       });
     });
     timeago.setLocaleMessages('id', timeago.IdMessages());
+    // Request permissions and start polling
+    _initializeNotifications();
     _fetchNotifications();
+  }
+
+  Future<void> _initializeNotifications() async {
+    // Request notification permissions
+    await LocalNotificationService.requestPermissions();
+
+    // Start polling service
+    final pollingService = NotificationPollingService();
+
+    _notificationSubscription = pollingService.notificationStream.listen((
+      notifications,
+    ) {
+      if (mounted) {
+        setState(() {
+          _notifications = notifications;
+        });
+      }
+    });
+
+    pollingService.startPolling(interval: const Duration(seconds: 30));
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _notificationSubscription?.cancel();
+    NotificationPollingService().dispose();
     super.dispose();
   }
 

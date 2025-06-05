@@ -39,7 +39,7 @@ class _CustomerAccountState extends State<CustomerAccount> {
   final TextEditingController _passwordController = TextEditingController();
 
   bool _isEditing = false;
-  bool _isLoading = false;
+  final bool _isLoading = false;
   bool _obscurePassword = true;
 
   File? _selectedImage;
