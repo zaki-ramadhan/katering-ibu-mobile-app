@@ -1,16 +1,59 @@
-# katering_ibu_m_flutter
+# Katering Ibu Mobile App
+[![Tech: Flutter](https://img.shields.io/badge/Flutter-02569B?logo=flutter&logoColor=white&style=for-the-badge)](https://flutter.dev/)
+[![Tech: Laravel](https://img.shields.io/badge/Laravel-FF2D20?logo=laravel&logoColor=white&style=for-the-badge)](https://laravel.com/)
+[![Platform: Android](https://img.shields.io/badge/Android-3DDC84?logo=android&logoColor=white&style=for-the-badge)](https://developer.android.com/)
 
-A new Flutter project.
+![Showcase-Katering-Ibu-Mobile-App-3-2-2.png](https://i.postimg.cc/TwzpfNyd/Showcase-Katering-Ibu-Mobile-App-3-2-2.png)
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+Katering Ibu Mobile App is an Android application built with Flutter for ordering food from local home-based catering businesses. The app communicates with a Laravel backend via API for menu, order, and transaction management. Developed as a mandatory university course project in collaboration with local business partners.
 
-A few resources to get you started if this is your first Flutter project:
+> **Backend Repository:**  
+> The backend API for this app is available at [zaki-ramadhan/katering-ibu](https://github.com/zaki-ramadhan/katering-ibu)
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## 🚀 Features
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- **Browse Menus:** Explore daily catering menus from local partners.
+- **Order Food:** Place orders and manage your transactions seamlessly.
+- **Track Orders:** Get real-time updates on your food orders.
+- **Secure Payments:** Safe and easy payment processing.
+- **Modern UI:** Intuitive Android interface built with Flutter.
+- **API Integration:** Fast and reliable connection to Laravel backend.
+
+## 🛠️ Tech Stack
+
+- **Frontend:** Flutter (Dart)
+- **Backend:** Laravel (API)  
+  See: [zaki-ramadhan/katering-ibu](https://github.com/zaki-ramadhan/katering-ibu)
+- **Platform:** Android
+
+## 🏁 Getting Started
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/zaki-ramadhan/katering-ibu-mobile-app.git
+   ```
+2. **Install dependencies:**
+   ```bash
+   flutter pub get
+   ```
+3. **Configure API:**  
+   Update the API endpoint in the Flutter project to connect with your Laravel backend.
+
+4. **Run the app on Android:**
+   ```bash
+   flutter run
+   ```
+
+## 🤝 Collaboration
+
+This project is developed in partnership with local home-based catering businesses as part of a mandatory university course. Contributions and feedback are welcome!
+
+## 📄 License
+
+This project is intended for educational purposes and uses open-source dependencies as listed in the project files.
+
+---
+
+**Developed by Zaki Ramadhan & Team | University Project**
