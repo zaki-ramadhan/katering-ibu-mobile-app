@@ -49,11 +49,3 @@ Katering Ibu Mobile App is an Android application built with Flutter for orderin
 ## 🤝 Collaboration
 
 This project is developed in partnership with local home-based catering businesses as part of a mandatory university course. Contributions and feedback are welcome!
-
-## 📄 License
-
-This project is intended for educational purposes and uses open-source dependencies as listed in the project files.
-
----
-
-**Developed by Zaki Ramadhan & Team | University Project**
