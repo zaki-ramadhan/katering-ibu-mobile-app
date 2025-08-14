@@ -10,7 +10,7 @@
 Katering Ibu Mobile App is an Android application built with Flutter for ordering food from local home-based catering businesses. The app communicates with a Laravel backend via API for menu, order, and transaction management. Developed as a mandatory university course project in collaboration with local business partners.
 
 > **Backend Repository:**  
-> The backend API for this app is available at [zaki-ramadhan/katering-ibu](https://github.com/zaki-ramadhan/katering-ibu)
+> The backend API for this app is available at [zaki-ramadhan/katering-ibu](https://github.com/zaki-ramadhan/katering-ibu/tree/main?tab=readme-ov-file#readme-ov-file)
 
 ## 🚀 Features
 
@@ -25,7 +25,7 @@ Katering Ibu Mobile App is an Android application built with Flutter for orderin
 
 - **Frontend:** Flutter (Dart)
 - **Backend:** Laravel (API)  
-  See: [zaki-ramadhan/katering-ibu](https://github.com/zaki-ramadhan/katering-ibu)
+  See: [zaki-ramadhan/katering-ibu](https://github.com/zaki-ramadhan/katering-ibu/tree/main?tab=readme-ov-file#readme-ov-file)
 - **Platform:** Android
 
 ## 🏁 Getting Started
