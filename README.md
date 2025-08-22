@@ -3,7 +3,7 @@
 [![Tech: Laravel](https://img.shields.io/badge/Laravel-FF2D20?logo=laravel&logoColor=white&style=for-the-badge)](https://laravel.com/)
 [![Platform: Android](https://img.shields.io/badge/Android-3DDC84?logo=android&logoColor=white&style=for-the-badge)](https://developer.android.com/)
 
-![Showcase-Katering-Ibu-Mobile-App-3-2-2.png](https://i.postimg.cc/TwzpfNyd/Showcase-Katering-Ibu-Mobile-App-3-2-2.png)
+![Poster Katering Ibu Mobile App](docs/Poster_Katering_Ibu_Mobile_App_-_3.2.2.webp)
 
 ---
 
